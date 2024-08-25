@@ -1,0 +1,428 @@
+{% extends 'base.html' %}
+{% block content %}
+    {% load static %}
+    <style>
+        .audit {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            display: none;
+            border: 5px solid;
+        }
+    </style>
+    <script>
+
+        function changeStatus(status){
+            $("#rfs_status").val(status);
+            if(document.forms["initRFS"].reportValidity()){
+                $("input").prop('disabled', false);
+                formChanged = false;
+                $("#initRFS").submit();
+            }
+        }
+
+        const months = [
+          'Jan',
+          'Feb',
+          'Mar',
+          'Apr',
+          'May',
+          'Jun',
+          'Jul',
+          'Aug',
+          'Sep',
+          'Oct',
+          'Nov',
+          'Dec'
+        ];
+
+        {% if rfs_request_data.rfs_request_id %}
+           var rfs_request_id = {{rfs_request_data.rfs_request_id}};
+           var link = '{{rfs_request_data.link}}';
+        {% else %}
+            var rfs_request_id = null;
+            var link = null;
+        {% endif %}
+
+        $(document).ready(function() {
+            $('#approvals').hide();
+            $('#collapse').click(function(){
+                $('#approvals').slideToggle('slow');
+            });
+            {% if rfs_request_data.rfs_request_id %}
+            $.ajax({
+                url: "/rfs/auditor/",
+                type: "post", //send it through get method
+                data: {'rfs_request_ids': link},
+                success: function(response) {
+                console.log(response);
+                results = response.results[0].results;
+                let findings = 0
+                try {
+                    if (results.result_estimates_resources_hrs.est_totals_hrs != results.result_estimates_resources_hrs.res_load_total_hrs){
+                        document.getElementById('result_estimates_resources_hrs').innerHTML = '<img src="{% static 'images/audit_fail.png' %}">';
+                        document.getElementById('result_estimates_resources_hrs').innerHTML += ' ' + results.result_estimates_resources_hrs.res_load_total_hrs + ' Hrs. vs ';
+                        document.getElementById('result_estimates_resources_hrs').innerHTML += ' ' + results.result_estimates_resources_hrs.est_totals_hrs + ' Hrs.';
+                        findings++;
+                    }
+                    if (results.result_estimates_resources_pom_hrs.est_pom_hrs != results.result_estimates_resources_pom_hrs.rl_pom_hrs){
+                        // audit failed
+                        document.getElementById('result_estimates_resources_pom_hrs').innerHTML = '<img src="{% static 'images/audit_fail.png' %}">';
+                        document.getElementById('result_estimates_resources_pom_hrs').innerHTML += ' ' + results.result_estimates_resources_pom_hrs.rl_pom_hrs + ' Hrs. vs ';
+                        document.getElementById('result_estimates_resources_pom_hrs').innerHTML += ' ' + results.result_estimates_resources_pom_hrs.est_pom_hrs + ' Hrs.';
+                        findings++;
+                    }
+                    if (results.result_resources_enddated.length){
+                        // audit failed
+                        document.getElementById('result_resources_enddated').innerHTML = '<img style="cursor:pointer" onclick="show_offboarded(this, event)" src="{% static 'images/audit_fail.png' %}">';
+                        findings++;
+                        var vnid_prev = '';
+                        var weeks = '';
+                        var tbl = document.getElementById('offboarded_loaded_tbl');
+                        for (i=0; i < results.result_resources_enddated.length; i++){
+                            var rec = results.result_resources_enddated[i];
+                            vnid = rec.vnid;
+                            if (vnid != vnid_prev){
+                                if (weeks.length){
+                                    var newRow=tbl.insertRow();
+                                    var cell1   = newRow.insertCell(0);
+                                    var txt = weeks.slice(0, -2);
+                                    var cell1Text  = document.createTextNode(txt)
+                                    cell1.appendChild(cell1Text);
+                                    weeks = '';
+                                }
+
+                                newRow=tbl.insertRow();
+                                cell1   = newRow.insertCell(0);
+                                txt = rec.first_name + ' was offboarded on ' + rec.enddate + ' but he is loaded for weeks: ';
+                                cell1Text  = document.createTextNode(txt)
+                                cell1.appendChild(cell1Text);
+                                vnid_prev = vnid;
+                            }
+                            weeks += rec.week + ', ' ;
+
+                        }
+                        if (weeks.length){
+                            var newRow=tbl.insertRow();
+                            var cell1   = newRow.insertCell(0);
+                            var txt = weeks.slice(0, -2);
+                            var cell1Text  = document.createTextNode(txt)
+                            cell1.appendChild(cell1Text);
+                            weeks = '';
+                        }
+                    }
+                    if (results.result_resources_overloaded.length){
+                        // audit failed
+                        document.getElementById('result_resources_overloaded').innerHTML = '<img style="cursor:pointer" onclick="show_overloaded(this, event)" src="{% static 'images/audit_fail.png' %}">';
+                        findings++;
+
+                        var vnid_prev = '';
+                        var weeks = '';
+                        var tbl = document.getElementById('overloaded_tbl');
+                        for (i=0; i < results.result_resources_overloaded.length; i++){
+                            var rec = results.result_resources_overloaded[i];
+                            vnid = rec.vnid;
+                            if (vnid != vnid_prev){
+                                if (weeks.length){
+                                    var newRow=tbl.insertRow();
+                                    var cell1   = newRow.insertCell(0);
+                                    var txt = weeks.slice(0, -2);
+                                    var cell1Text  = document.createTextNode(txt)
+                                    cell1.appendChild(cell1Text);
+                                    weeks = '';
+                                }
+
+                                newRow=tbl.insertRow();
+                                cell1   = newRow.insertCell(0);
+                                txt = rec.first_name + ' is overloaded for weeks: ';
+                                cell1Text  = document.createTextNode(txt)
+                                cell1.appendChild(cell1Text);
+                                vnid_prev = vnid;
+                            }
+                            weeks += rec.week + ', ' ;
+
+                        }
+                        if (weeks.length){
+                            var newRow=tbl.insertRow();
+                            var cell1   = newRow.insertCell(0);
+                            var txt = weeks.slice(0, -2);
+                            var cell1Text  = document.createTextNode(txt)
+                            cell1.appendChild(cell1Text);
+                            weeks = '';
+                        }
+
+                    }
+                    if (results.results_racis == null){
+                        // audit failed
+                        document.getElementById('results_racis').innerHTML = '<img src="{% static 'images/audit_fail.png' %}">';
+                        findings++;
+                    }
+                    $("#audit_span")[0].innerHTML='';
+                    if (findings){
+                        $("#audit_span")[0].innerHTML='<img style="cursor:pointer" onclick="show_findings(this, event)" src="{% static 'images/audit_fail.png' %}">';
+                    }
+                    else{
+                        $("#audit_span")[0].innerHTML='<img src="{% static 'images/audit_ok.png' %}">';
+                    }
+                }
+                catch(e){
+                }
+                },
+                error: function(response) {
+                console.log(response);
+                }
+            });
+            {% endif %}
+
+        });
+
+        function c2c(rfs_request_id){
+            navigator.clipboard.writeText('{{ request.build_absolute_uri }}'.split('?')[0] + '?rfs_request_id=' + rfs_request_id).then(() => {
+        alert("successfully copied");
+      })
+      .catch(() => {
+        alert("something went wrong");
+      });
+        }
+
+    var formChanged = false;
+
+    $(document).ready(function() {
+        document.getElementById('initRFS').addEventListener('change', function(){
+           formChanged = true;
+        });
+    });
+
+    function show_findings(results, event){
+        $("#audit_findings").show();
+    }
+
+    function show_offboarded(){
+        $("#offboarded_loaded").show();
+    }
+
+    function show_overloaded(){
+        $("#overloaded").show();
+    }
+
+    window.addEventListener('beforeunload', function(e){
+        if (formChanged){
+            var confirmMsg = "You have unsaved changes. Are you sure!";
+            e.returnValue = confirmMsg;
+
+            return confirmMsg;
+        }
+    });
+
+    </script>
+
+    <style>
+        .w3-border-red, .w3-hover-border-red:hover {
+            border: 4px solid #A40000;
+            border-radius: 5px;
+            padding-top: 5px;
+            padding-right: 5px;
+            padding-bottom: 5px;
+            padding-left: 5px;
+        }
+
+    </style>
+    <a href="{% url 'export_users_xls' %}?rfs_request_id={{rfs_request_data.link}}{% if version %}&version={{version}}{% endif %}">Export RFS in Excel</a>
+    - <span style="cursor: pointer" onclick = "c2c('{{rfs_request_data.link}}');">Copy Link</span>
+    <h5>{{page.name}} - <a href="/rfs/">RFS Home</a> </h5>
+    <div id="myHeader">
+    <div class="headernav">
+        <div class="row text-center">
+            <span class="col-md-4">
+                 {% if rfs_request_data.rfs_request_id %}
+                    <span id="audit_span"><img src="{% static 'images/audit_loading.gif' %}"></span>
+                    RFS ID:
+                        {{ rfs_request_data.rfs_request_id}}
+                        ({{rfs_request_data.project_id}} - {{rfs_request_data.project_name}})
+                {% else %}
+                        Not Created
+                {% endif %}
+               </span>
+            {% if version %}
+                <span class="col-md-4" style="background:yellow;color:black;"> Version: {{version}}</span>
+                <span class="col-md-4" >
+                    <form name="rfsform" method="post" action="/rfs/request-for-service/">
+                            {% csrf_token %}
+                            <input type="hidden" name="rfs_request_id" value="{{rfs_request_data.link}}">
+                            <input type="hidden" name="via_view" value="via_view">
+                            <button class="greenbuttons" type="submit">Current RFS</button>
+                        </form>
+                </span>
+            {% endif %}
+            {% if not version %}
+                <span class="col-md-2">
+                    {% if rfs_request_data.rfs_status == '' %}
+                        <button class="greenbuttons" type="button" onclick="changeStatus('NEW');" > Start RFS </button>
+                    {% elif rfs_request_data.rfs_status == 'APPROVED' %}
+                        <button class="greenbuttons" type="button" onclick="changeStatus('NEW');" > Reopen RFS </button>
+                    {% else  %}
+                        <button class="greenbuttons" type="button" onclick="changeStatus('{{rfs_request_data.rfs_status}}');"> Save RFS </button>
+                    {% endif %}</span>
+                <span class="col-md-2">
+                    {% if rfs_request_data.rfs_request_id and rfs_request_data.rfs_status == 'SUBMITTED' %}<button class="greenbuttons" type="button" onclick="changeStatus('APPROVED');">Approve </button>{% endif %}
+                    {% if rfs_request_data.rfs_request_id and rfs_request_data.rfs_status == 'NEW' %}<button class="greenbuttons" type="button" onclick="changeStatus('SUBMITTED');">Submit RFS</button>{% endif %}
+                </span>
+                <span class="col-md-2">{% if rfs_request_data.rfs_request_id and rfs_request_data.rfs_status == 'SUBMITTED' %}<button class="greenbuttons" type="button" onclick="changeStatus('NEW');"> Return </button>{% endif %}</span>
+                <span class="col-md-2">  {{ rfs_request_data.rfs_status}} </span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="headernavblue">
+        <div class="row text-center">
+            {% if rfs_request_data.rfs_request_id %}
+            <span class="col-md-4">
+                <form name="rfsform" method="post" action="{% if version %}/rfs/request-for-service/approved{% else %}.{% endif %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="rfs_request_id" value="{{rfs_request_data.link}}">
+                    <input type="hidden" name="via_view" value="via_view">
+                    {% if version %}<input type="hidden" name="version" value="{{version}}">{% endif %}
+                    <button class="greenbuttons" type="submit">Request For Service</button>
+                </form>
+            </span>
+            <span class="col-md-4">
+                <form name="rfsform" method="post" action="{% if version %}/rfs/request-for-service/estimates/approved{% else %}estimates{% endif %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="rfs_request_id" value="{{rfs_request_data.link}}">
+                    <input type="hidden" name="via_view" value="via_view">
+                    {% if version %}<input type="hidden" name="version" value="{{version}}">{% endif %}
+                    <button class="greenbuttons" type="submit">Estimates</button>
+                </form>
+            </span>
+            <span class="col-md-4">
+                <form name="rfsform" method="post" action="{% if version %}/rfs/request-for-service/resource-loading/approved{% else %}resource-loading{% endif %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="rfs_request_id" value="{{rfs_request_data.link}}">
+                    <input type="hidden" name="via_view" value="via_view">
+                    {% if version %}<input type="hidden" name="version" value="{{version}}">{% endif %}
+                    <button class="greenbuttons" type="submit">Resource Loading</button>
+                </form>
+            </span>
+            {% endif %}
+        </div>
+    </div>
+    </div>
+
+    {% block rfs_content %}
+    {% endblock %}
+    {% load humanize %}
+    {% if approved_rfs %}
+        <div id="collapse" class="w3-border-bottom w3-border-red">
+            Approval History +/-
+
+        <div id="approvals">
+            <table class="rbstable" >
+                <tr>
+
+                    <th>
+                        Approval Date
+                    </th>
+                    <th>
+                        Total QA Hrs
+                    </th>
+                    <th colspan="2">
+                        Total QA Cost
+                    </th>
+                </tr>
+            {% for rfs in approved_rfs %}
+                <tr>
+
+                    <td>
+                        {{rfs.approval_date|date:"d-M-Y"}}
+                    </td>
+                    <td>
+                        {{rfs.rfs_total_hrs|default_if_none:"0"|intcomma}}
+                    </td>
+                    <td>
+                        ${{rfs.total_qa_cost|default_if_none:"0"|intcomma}}
+                    </td>
+                    <td>
+                        <form method="post" action="./approved">
+                            {% csrf_token %}
+                            <button type="submit" class="greenbuttons" value="View">View Version {{rfs.approval_num}}</button>
+                            <input type="hidden" name="rfs_request_id" value="{{rfs.link}}">
+                            <input type="hidden" name="version" value="{{rfs.approval_num}}">
+                        </form>
+                    </td>
+                </tr>
+            {% endfor%}
+            </table>
+        </div>
+         </div>
+    {% endif %}
+    <div id="audit_findings" class="audit">
+        <table class="rbstable rbstables">
+            <tr>
+                <td colspan="2">
+                    <table width="100%">
+                        <tr>
+                            <th width="95%" style="text-align:center">Audit Findings for {{rfs_request_data.project_id}} - {{rfs_request_data.project_name}}</th>
+                            <th style="text-align:right"><span style="color:black; cursor:pointer;" onclick="$('#audit_findings').hide()"> X </span></th>
+                        </tr>
+                    </table>
+                </td>
+
+            </tr>
+            <tr>
+                <td width="50%">Resource Loading vs Estimates Total Hrs</td>
+                <td width="50%" id="result_estimates_resources_hrs"><img src="{% static 'images/audit_ok.png' %}"></td>
+            </tr>
+            <tr>
+                <td>Resource Loading vs Estimates PoM Hrs</td>
+                <td id="result_estimates_resources_pom_hrs"><img src="{% static 'images/audit_ok.png' %}"></td>
+            </tr>
+            <tr>
+                <td>Offboarded Resources Loaded</td>
+                <td id="result_resources_enddated"><img src="{% static 'images/audit_ok.png' %}"></td>
+            </tr>
+            <tr>
+                <td>Resources Overloaded</td>
+                <td id="result_resources_overloaded"><img src="{% static 'images/audit_ok.png' %}"></td>
+            </tr>
+            <tr>
+                <td>No RACIs</td>
+                <td id="results_racis"><img src="{% static 'images/audit_ok.png' %}"></td>
+            </tr>
+        </table>
+    </div>
+
+    <div id="offboarded_loaded" class="audit">
+        <table class="rbstable rbstables" id="offboarded_loaded_tbl">
+            <tr>
+                <td colspan="2">
+                    <table width="100%">
+                        <tr>
+                            <th width="95%" style="text-align:center">Offboarded Resources Loaded</th>
+                            <th style="text-align:right"><span style="color:black; cursor:pointer;" onclick="$('#offboarded_loaded').hide()"> X </span></th>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+
+        </table>
+    </div>
+
+    <div id="overloaded" class="audit">
+        <table class="rbstable rbstables" id="overloaded_tbl">
+            <tr>
+                <td colspan="2">
+                    <table width="100%">
+                        <tr>
+                            <th width="95%" style="text-align:center">Overloaded Resources</th>
+                            <th style="text-align:right"><span style="color:black; cursor:pointer;" onclick="$('#overloaded').hide()"> X </span></th>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+
+        </table>
+    </div>
+    <div style="height:500px"></div>
+{% endblock %}

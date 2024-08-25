@@ -1,0 +1,613 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static%}
+<link rel="stylesheet" type="text/css" href="{% static 'js/Chart.js/Chart.css' %}" >
+<script type="text/javascript" src="{% static 'js/Chart.js/Chart.js' %}" type="javascript"></script>
+<script src="{% static 'DataTables/datalabels.min.js' %}"></script>
+    <style>
+        td {
+            vertical-align: top;
+
+        }
+        .Offshore {
+            background-color:#76ce76;
+        }
+        .Onsite {
+            background-color:#ffe0a9;
+        }
+        .leadership {
+            font-size: x-large;
+            font-weight:bold;
+            text-align:center;
+            white-space: nowrap;
+        }
+        .pom {
+            font-size: 1em;
+            font-weight:bold;
+            text-align:center;
+            white-space: nowrap;
+        }
+        .domain_lead {
+            font-weight:bold;
+            font-size: large;
+            text-align:center;
+        }
+        .domain {
+            background-color:#c7cdf6;
+            text-align:center;
+            font-weight:bold;
+            font-size:1em;
+        }
+        .team_member {
+            font-size:.75em;
+        }
+        table {
+            width:100%
+        }
+        .RBS {
+            color:green;
+        }
+        .IBM{
+            color:blue;
+        }
+        .IBMC{
+            color:blue;
+        }
+        .count{
+            //font-size: 8.2em;
+        }
+
+    </style>
+<div class="contentnav">
+    <table border="5" style="text-align:center;">
+        <tr>
+            <td colspan="4"><span style="font-size: 3.2em;">Total Heads</span><br><span style="font-size: 5.2em;" class="count" id="stats_total_heads"></span></td>
+        </tr>
+        <tr>
+            <td colspan="2"><span style="font-size: 4.2em;">Leadership</span><br><span style="font-size: 4em;" class="count" id="stats_leadership"></span></td>
+            <td colspan="2"><span style="font-size: 4.2em;">Team Members</span><br><span style="font-size: 4em;" class="count" id="stats_team_members"></span></td>
+        </tr>
+        <tr>
+            <td><span style="font-size: 3.2em;">Offshore</span><br><span class="count" style="font-size: 4.2em;" id="stats_total_offshore"></span></td>
+            <td><span style="font-size: 3.2em;">Onsite</span><br><span class="count" style="font-size: 4.2em;" id="stats_total_onsite"></span></td>
+            <td><span style="font-size: 3.2em;">RBS Associates</span><br><span style="font-size: 4.2em;" class="count" id="stats_total_rbs"></span></td>
+            <td><span style="font-size: 3.2em;">IBMers</span><br><span style="font-size: 4.2em;" class="count" id="stats_total_ibm"></span></td>
+        </tr>
+
+        <tr>
+            <td><span style="font-size: 3.2em;">Delivery Managers</span><br><span style="font-size: 4.2em;" class="count" id="stats_delivery_managers"></span></td>
+            <td><span style="font-size: 3.2em;">Project Managers</span><br><span style="font-size: 4.2em;" class="count" id="stats_project_managers"></span></td>
+            <td><span style="font-size: 3.2em;">Portfolio Managers</span><br><span style="font-size: 4.2em;" class="count" id="stats_pom"></span></td>
+            <td><span style="font-size: 3.2em;">Domain Leads</span><br><span style="font-size: 4.2em;" class="count" id="stats_domain_leads"></span></td>
+        </tr>
+    </table>
+</div>
+<div class="contentnav overflow-auto" style="min-height:400px;">
+    <table border="1">
+        <tr>
+            <td>
+                <div style="height:50px"></div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <table border="3" style="text-align:center">
+                    <tr>
+                        <td colspan="10"><h3>Legends</h3></td>
+                    </tr>
+                    <tr>
+                        <td style="width:10%" class="RBS">Green Text</td>
+                        <td style="width:10%" >RBS</td>
+
+                        <td style="width:10%"  class="IBM">Blue Text</td>
+                        <td style="width:10%" >IBM</td>
+
+                        <td style="width:10%"  class="Onsite">BG Orange</td>
+                        <td style="width:10%" >Onsite</td>
+
+                        <td style="width:10%"  class="Offshore">BG Green</td>
+                        <td style="width:10%" >Offshore</td>
+
+                        <td style="width:10%"  class="domain">BG Blue</td>
+                        <td style="width:10%" >Domain</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <div style="height:50px"></div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <table border="3">
+                    <tr>
+                        <td style="text-align:center">
+                            {% for rec in teamdata %}
+                                {% if rec.role_id == 9 %}
+                                    <span class="leadership {{rec.org}}" id="vnid_{{rec.vnid}}">
+                                        {{rec.first_name}} {{rec.last_name}} ({{rec.org}})
+                                    </span>
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <table border="1">
+                                <tr>
+                                    {% for rec in teamdata %}
+                                        {% if rec.role_id == 2 %}
+                                            <td>
+                                                <table border="1">
+                                                    <tr >
+                                                        <td id="vnid_{{rec.vnid}}" class="{{rec.org}} pom">
+                                                           {{rec.first_name}} {{rec.last_name}}
+                                                        </td>
+                                                    </tr> <!--- POMs --->
+                                                    <tr>
+                                                        <td>
+                                                            <table border="1">
+                                                                <tr>
+                                                                    {% for domain in domains %}
+                                                                        {% if domain.pom == rec.vnid %}
+                                                                            <td>
+                                                                                <table>
+                                                                                    <tr class="domain">
+                                                                                        <td id="domain_{{domain.domain_id}}">{{domain.domain_name}}</td>
+                                                                                    </tr>
+                                                                                    <tr>
+                                                                                        {% for rec_dl in teamdata %}
+                                                                                            {% if rec_dl.role_id == 1 and rec_dl.vnid == domain.domain_lead %}
+                                                                                                <td>
+                                                                                                    <table border="1">
+                                                                                                        <tr>
+                                                                                                            <td class="{{rec_dl.loc}} {{rec_dl.org}} domain_lead" id="vnid_{{rec_dl.vnid}}">
+                                                                                                                {{rec_dl.first_name}} {{rec_dl.last_name}}
+                                                                                                            </td>
+                                                                                                        </tr>
+                                                                                                        <tr>
+                                                                                                            <td>
+                                                                                                                {% for rec_t in teamdata %}
+                                                                                                                    {% if rec_t.domain_name == domain.domain_name %}
+                                                                                                                        {% if  rec_t.role_id != 1 and rec_t.role_id != 2 and rec_t.role_id != 9 and rec_t.role_id != 8 and rec_t.role_id != 14 %}
+                                                                                                                            <div id="vnid_{{rec_t.vnid}}" class="{{rec_t.loc}} {{rec_t.org}} team_member">{{rec_t.first_name}} {{rec_t.last_name}}</div>
+                                                                                                                        {% endif %}
+                                                                                                                    {% endif %}
+                                                                                                                {% endfor %}
+                                                                                                            </td><!--- team --->
+                                                                                                        </tr><!--- team --->
+                                                                                                    </table> <!--- DL and team -->
+                                                                                                </td> <!--- DLs --->
+                                                                                            {% endif %}
+                                                                                        {% endfor %}
+                                                                                    </tr> <!-- DLs --->
+                                                                                    <tr><td style="font-size:large; text-align:center">Heads: <span class="count" id="domain_id_{{domain.domain_id}}"></span></td></tr>
+                                                                                </table> <!-- domain names -->
+                                                                            </td><!--- domain --->
+                                                                        {% endif %}
+                                                                    {% endfor %}
+                                                                </tr>
+                                                            </table><!--- domains --->
+                                                        </td><!--- domains --->
+                                                    </tr><!--- domains --->
+                                                </table> <!--- POMs --->
+                                            </td> <!--- POMs --->
+                                        {% endif %}
+                                    {% endfor %}
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <div style="height:50px"></div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <table border="3">
+                    <tr>
+                        <td style="text-align:center">
+                            {% for rec in teamdata %}
+                                {% if rec.role_id == 9 %}
+                                    <span class="leadership {{rec.org}}" >
+                                        {{rec.first_name}} {{rec.last_name}} ({{rec.org}})
+                                    </span>
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <table border="1">
+                                <tr>
+                                    <td>
+                                        <div class="domain">Project Managers</div>
+                                        {% for rec in teamdata %}
+                                            {% if rec.role_id == 8 %}
+                                                <div class="pms {{rec.loc}} {{rec.org}}" id="vnid_{{rec.vnid}}">
+                                                    {{rec.first_name}} {{rec.last_name}}
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </td>
+                                    <td>
+                                        <div class="domain">Delivery Managers</div>
+                                        {% for rec in teamdata %}
+                                            {% if rec.role_id == 14 %}
+                                                <div class="dms {{rec.loc}} {{rec.org}}" id="vnid_{{rec.vnid}}">
+                                                    {{rec.first_name}} {{rec.last_name}}
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+
+    </table>
+    <div style="height:50px"></div>
+    <table style="width:100%; border:1px solid black">
+        <tr>
+            <td style="width:20%;text-align:center" >
+                <h3>Onsite-Offshore Chart</h3>
+            </td>
+            <td style="width:60%;text-align:center" >
+                <h3>Headcount Shares of Domains</h3>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:40%; vertical-align:middle;">
+                <canvas id="o_o"></canvas>
+            </td>
+            <td style="width:60%">
+                <canvas id="domain_chart"></canvas>
+            </td>
+        </tr>
+    </table>
+    <div style="height:50px"></div>
+    <table>
+        <tr>
+            <td style="text-align:center">
+                <H2>Headcount by Rate Categories</H2>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <canvas id="rateChart"></canvas>
+            </td>
+        </tr>
+    </table>
+
+</div>
+
+
+    <script>
+        var stats = {
+            'leadership': 0,
+            'pom':0,
+            'domain_leads':0,
+            'team_members':0,
+            'project_managers':0,
+            'delivery_managers':0,
+            'total_rbs':0,
+            'total_ibm':0,
+            'total_onsite':0,
+            'total_offshore':0,
+            'total_heads':0,
+            'domains': [],
+            'rates':[]
+        }
+
+        {% for rec in teamdata %}
+            {% if rec.role_id == 9 %}
+                stats.leadership++;
+            {% endif %}
+            {% if rec.role_id == 2 %}
+                stats.pom++;
+            {% endif %}
+            {% if rec.role_id == 1 %}
+                stats.domain_leads++;
+            {% endif %}
+            {% if rec.role_id == 14 %}
+                stats.delivery_managers++;
+            {% endif %}
+            {% if rec.role_id == 8 %}
+                stats.project_managers++;
+            {% endif %}
+            {% if  rec.role_id != 1 and rec.role_id != 2 and rec.role_id != 9 and rec.role_id != 8 and rec.role_id != 14 %}
+                stats.team_members++;
+            {% endif %}
+            {% if rec.org == 'RBS' %}
+                stats.total_rbs++;
+            {% else %}
+                stats.total_ibm++;
+            {% endif %}
+            {% if rec.loc == 'Onsite' %}
+                stats.total_onsite++;
+            {% else %}
+                stats.total_offshore++;
+            {% endif %}
+
+        {% endfor %}
+            stats.total_heads = stats.total_rbs + stats.total_ibm;
+        var heads = 0;
+        {% for domain in domains %}
+            {% for rec in teamdata %}
+                {% if rec.domain_name == domain.domain_name %}
+                    heads++;
+                {% endif %}
+            {% endfor %}
+            if (heads)
+                stats.domains.push({'domain_name': '{{domain.domain_name}}', 'domain_id': {{domain.domain_id}}, 'heads':heads});
+            heads = 0;
+        {% endfor %}
+
+        heads = 0;
+        {% for rate in rates %}
+            {% for rec in teamdata %}
+                {% if rec.rate_id == rate.rate_id %}
+                    heads++;
+                {% endif %}
+            {% endfor %}
+            if (heads)
+                stats.rates.push({'category': '{{rate.category}}', 'rate_id': {{rate.rate_id}}, 'rate':'{{rate.rate}}', 'heads':heads});
+            heads = 0;
+        {% endfor %}
+
+        $(window).resize(function() {
+            setMargins();
+        });
+
+        $(document).ready(function() {
+            setMargins();
+            document.getElementById("stats_leadership").innerHTML = stats.leadership;
+            document.getElementById("stats_pom").innerHTML = stats.pom;
+            document.getElementById("stats_total_offshore").innerHTML = stats.total_offshore;
+            document.getElementById("stats_total_onsite").innerHTML = stats.total_onsite;
+            document.getElementById("stats_total_ibm").innerHTML = stats.total_ibm;
+            document.getElementById("stats_total_rbs").innerHTML = stats.total_rbs;
+            document.getElementById("stats_team_members").innerHTML = stats.team_members;
+            document.getElementById("stats_project_managers").innerHTML = stats.project_managers;
+            document.getElementById("stats_delivery_managers").innerHTML = stats.delivery_managers;
+            document.getElementById("stats_domain_leads").innerHTML = stats.domain_leads;
+            document.getElementById("stats_total_heads").innerHTML = stats.total_heads;
+
+            for (i=0; i<stats.domains.length;i++){
+                document.getElementById('domain_id_' + stats.domains[i].domain_id).innerHTML = stats.domains[i].heads;
+            }
+
+            //anim_counters();
+            document.querySelectorAll('.count').forEach(element => {
+
+              const target = +element.innerHTML;
+              let count = Math.floor(target*.6);
+              let animationId;
+
+              function countUp() {
+                count++;
+                element.innerHTML = count;
+                if (count >= target) {
+                  cancelAnimationFrame(animationId);
+                } else {
+                  animationId = requestAnimationFrame(countUp);
+                }
+              }
+
+              animationId = requestAnimationFrame(countUp);
+            });
+
+
+
+
+
+            var myChart;
+            var xValues = ["Leadership", "Portfolio Managers", "Domain Leads", "Team Members", "Delivery Managers", "Project Managers"];
+                    var yValues = [stats.leadership, stats.pom, stats.domain_leads, stats.team_members, stats.delivery_managers, stats.project_managers];
+                    var barColors = [
+                      "#b91d47",
+                      "#00aba9",
+                      "#2b5797",
+                      "#e8c3b9",
+                      "#1e7145",
+                      "red"
+                    ];
+
+                    var config = {
+                      type: 'pie',
+                      data: {
+                        labels: xValues,
+                        datasets: [{
+                          backgroundColor: barColors,
+                          data: yValues
+                        }]
+                      },
+                      options: {
+                        responsive: true,
+                        plugins: {
+                          legend: {
+                            position: 'top',
+                          }
+                        }
+                      },
+                    };
+                    var ctx = $('#myChart');
+                    var o_o = $('#o_o');
+                    var domain_data = $('#domain_chart');
+
+                    // myChart = new Chart(ctx, config);
+
+                    xValues = ["Onsite", "Offshore"];
+                    yValues = [stats.total_onsite, stats.total_offshore];
+                     config = {
+                      type: 'pie',
+                      data: {
+                        labels: xValues,
+                        datasets: [{
+                          backgroundColor: ['red', 'green'],
+                          data: yValues
+                        }]
+                      },
+                      options: {
+                        responsive: true,
+                        legend: {
+                            labels: {
+                              fontSize: 20
+                            }
+                        },
+                        plugins: {
+                            datalabels: {
+                              font: {
+                                size: 36
+                              },
+                              color: 'black'
+                            }
+                        }
+                      },
+                    };
+                    barColors = [
+                          "red",
+                          "green"
+                        ];
+                    o_o_chart = new Chart(o_o, config);
+
+                    xValues = [];
+                    yValues = [];
+                    barColors = [];
+                    var colorArray = ['#FF6633', '#FFB399', '#FF33FF', '#FFFF99', '#00B3E6',
+                      '#E6B333', '#3366E6', '#999966', '#99FF99', '#B34D4D',
+                      '#80B300', '#809900', '#E6B3B3', '#6680B3', '#66991A',
+                      '#FF99E6', '#CCFF1A', '#FF1A66', '#E6331A', '#33FFCC',
+                      '#66994D', '#B366CC', '#4D8000', '#B33300', '#CC80CC',
+                      '#66664D', '#991AFF', '#E666FF', '#4DB3FF', '#1AB399',
+                      '#E666B3', '#33991A', '#CC9999', '#B3B31A', '#00E680',
+                      '#4D8066', '#809980', '#E6FF80', '#1AFF33', '#999933',
+                      '#FF3380', '#CCCC00', '#66E64D', '#4D80CC', '#9900B3',
+                      '#E64D66', '#4DB380', '#FF4D4D', '#99E6E6', '#6666FF'];
+                    for (i=0; i<stats.domains.length;i++){
+                        xValues.push(stats.domains[i].domain_name);
+                        yValues.push(stats.domains[i].heads);
+                        barColors.push(colorArray[i]);
+                    }
+                     config = {
+                      type: 'pie',
+                      data: {
+                        labels: xValues,
+                        datasets: [{
+                          backgroundColor: barColors,
+                          data: yValues
+                        }]
+                      },
+                      options: {
+                        responsive: true,
+                        legend: {
+                            labels: {
+                              fontSize: 20
+                            }
+                        },
+                         plugins: {
+                            datalabels: {
+                              font: {
+                                size: 36
+                              },
+                              color: 'black'
+                            }
+                          }
+                      },
+                    };
+
+                    domain_chart = new Chart(domain_data, config);
+
+                    xValues = [];
+                    yValues = [];
+                    rates = []
+                    barColors = [];
+
+                    for (i=0; i<stats.rates.length;i++){
+                        xValues.push(stats.rates[i].category);
+                        yValues.push(stats.rates[i].heads);
+                        rates.push(stats.rates[i].rate);
+                        barColors.push(colorArray[i]);
+                    }
+
+                    new Chart("rateChart", {
+                      type: "bar",
+                      data: {
+                        labels: xValues,
+                        datasets: [{
+                          backgroundColor: barColors,
+                          data: yValues
+                        }]
+                      },
+                      options: {
+                        scales: {
+                          xAxes: [{
+                            ticks: {
+                              fontSize: 15
+                            }
+                          }],
+                          yAxes: [{
+                            ticks: {
+                              beginAtZero: true
+                            }
+                          }]
+                        },
+                        plugins: {
+                         display: true,
+                          datalabels: {
+                            formatter: (value, ctx) => {
+
+                              return "$" + stats.rates[ctx.dataIndex].rate;
+                            },
+                            align: 'end',
+                            anchor: 'end',
+                            offset: 10,
+                            color: 'black',
+                            font: {
+                              size: 18
+                            }
+                          }
+                        }
+                      }
+                    });
+                    window.scrollTo(0,0);
+
+
+        } );
+
+        function setMargins() {
+
+            width = $(window).width();
+            $(".contentnav").width(width*1);
+            containerWidth = $(".contentnav").width();
+            leftMargin = (width-containerWidth)/2;
+            offset = $(".contentnav").position().left;
+            $(".contentnav").css("marginLeft", leftMargin - offset);
+        }
+
+        function anim_counters(){
+            $('.count').each(function () {
+              var $this = $(this);
+              jQuery({ Counter: 0 }).animate({ Counter: $this.text() }, {
+                duration: 1000,
+                easing: 'swing',
+                step: function () {
+                  $this.text(Math.ceil(this.Counter));
+                }
+              });
+            });
+        }
+
+    </script>
+
+
+{% endblock %}

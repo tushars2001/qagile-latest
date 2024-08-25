@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% load static%}
+{% block content %}
+<style type="text/css" media="Screen">
+* .sized {
+    table-layout: auto;
+  width: 100%;
+}
+
+* .p1 {
+  width: 20%;
+  background: pink;
+}
+
+* .p2 {
+  width: 80%;
+  background: gold;
+}
+
+* .p3 {
+  width: 50%;
+  vertical-align: top;
+
+}
+
+.msgbox {
+    margin:4px, 4px;
+    padding:4px;
+    height: 140px;
+    overflow-y: hidden;
+    text-align:justify;
+}
+
+.msgbox:hover {
+  overflow-y: scroll;
+}
+
+.msgbox::-webkit-scrollbar {
+    width: 3px;
+    margin: 6px;
+}
+
+.msgbox::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+    border-radius: 6px;
+}
+
+.msgbox::-webkit-scrollbar-thumb {
+    border-radius: 6px;
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
+}
+</style>
+
+<table border="1" width="100%" class="sized" style="text-align:center" cellspacing="30px" cellpadding="15px">
+
+    <tr>
+        <td height="30px" colspan="2">
+            <h1>RBS QA CoE Initiative</h1>
+        </td>
+    </tr>
+    <tr>
+        <td height="20px" colspan="2">
+            <h3>Message From QA CoE Leadership</h3>
+        </td>
+    </tr>
+    <tr>
+        <td height="100px" class="p3">
+            <table style="width:100%">
+                <tr><td>
+                    {% if user.username == '1332911' or user.username == 'vn05438' %}
+                    <a href="./messages" style="font-size:x-small">edit</a>
+                    {% endif %}
+                </td></tr>
+                <tr><td><img src="{% static 'images/bruce.png' %}"></td></tr>
+                <tr><td>
+                    <div class="msgbox">
+                        <p style="text-align:justify">{{messages_data.bruce}}</p>
+                    </div>
+                </td></tr>
+            </table>
+        </td>
+
+        <td class="p3">
+            <table style="width:100%">
+                <tr><td>
+                {% if user.username == '1332911' or user.username == 'vn05438' %}
+                    <a href="./messages" style="font-size:x-small">edit</a>
+                {% endif %}
+                </td></tr>
+                <tr><td><img src="{% static 'images/sreeman.png' %}"></td></tr>
+                <tr><td>
+                    <div class="msgbox">
+                        <p style="text-align:left">{{messages_data.sreeman}}</p>
+                    </div>
+                </td></tr>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td height="30px" colspan="2"><button type="button" class="greenbuttons" onclick="window.location='./rfs/';"><h1>Engage QA - Create / Manage RFS</h1></button> </td>
+    </tr>
+    <tr>
+        <td height="30px"><h4>QA Organization</h4></td>
+        <td><h4>How We Work</h4></td>
+    </tr>
+    <tr>
+        <td height="30px" colspan="1">
+            <button type="button" class="greenbuttons" onclick="window.location='./manage/team/';"><h3>Manage Team</h3></button>
+        </td>
+        <td height="30px" colspan="1">
+            <button type="button" class="greenbuttons" onclick="window.location='./analytics';"><h3>Analytics</h3></button>
+        </td>
+    </tr>
+
+</table>
+
+{% endblock %}

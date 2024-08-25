@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block content %}
+
+    <div class="headernav" id="myHeader">
+        <div class="row text-center">
+            <span class="col-md-2"> <a href="#team"> Team </a></span>
+            <span class="col-md-2"> <a href="#domains"> Domains </a></span>
+            <span class="col-md-2"> <a href="#roles"> Roles </a></span>
+            <span class="col-md-2"> <a href="#locations"> Locations </a></span>
+            <span class="col-md-2"> <a href="#rates"> Rates </a></span>
+            <span class="col-md-2">  </span>
+        </div>
+    </div>
+
+    <div class="contentnav overflow-auto">
+        <table cellspacing="5" cellpadding="5"><tr><td><h3 id="role">Role</h3></td><td><a href="../#roles">Back</a></td></tr></table>
+        <form name="roleform" method="post" action="./">
+            {% csrf_token %}
+        <table id="roletable" class="display rbstable">
+            <tbody>
+                {% for row in roledata %}
+                    <tr>
+                        <td>Role ID</td><td><input type="text" name="role_id" value="{{row.role_id}}" readonly maxlength="7" style="background-color:grey"></td>
+                    </tr>
+                    <tr>
+                        <td>Role</td><td><input type="text" name="role" value="{{row.role}}" maxlength="45"></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <button class="greenbuttons" type="submit" name="save_button">Save</button>
+                            {% if row.vnid != "" %}
+                                <button class="greenbuttons" type="submit" name="del_button">Delete</button>
+                            {% endif %}
+                        </td>
+
+                    </tr>
+                 {% endfor   %}
+            </tbody>
+        </table>
+        </form>
+
+{% endblock %}

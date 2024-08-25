@@ -1,0 +1,359 @@
+{% extends 'headmenu.html' %}
+
+{% block rfs_content %}
+
+
+    <script>
+        multperson = [];
+        persons = {{persons|safe|escape}};
+        weekStart = startOfWeek(new Date());
+        v_numofweeks = 0;
+        fixedCols = 7;
+
+        function addWeeks(n){
+
+
+            headcolcount = $("#loadTable")[0].rows[0].cells.length;
+            weekcols = headcolcount - fixedCols;
+
+            for(i=0; i<n; i++){
+                pos = $("#loadTable").find("tr:first th").length-1;
+                tmpweekstart=new Date(weekStart.getTime());
+                weekstartdt = formatDate( tmpweekstart.setDate(tmpweekstart.getDate()+(weekcols+i)*7) );
+                humandate = formatDateHuman( tmpweekstart );
+                $('#loadTable').find('tr').each(function(a,b){
+                    var vnid = this.id;
+
+                    var td_name = "f_week_hrs_"+vnid+"_"+weekstartdt;
+                    var controls = "";
+
+                    $(this).find('th').eq(pos).after('<th style="font-size:small;text-align:center;min-width:100px;">'+humandate+'</th>');
+                    $(this).find('td').eq(pos).after("<td style='font-size:small'><span type='text' name='"+td_name+"'  width='50px'>"+controls+"</td>");
+                });
+            }
+        }
+
+    function deleteWeeks(n){
+        for(i=0; i<n; i++){
+            pos = $("#loadTable").find("tr:first th").length;
+            if(pos < (fixedCols + 1)) return;
+            $('#loadTable th:nth-child('+pos+'),#loadTable td:nth-child('+pos+')').remove();
+        }
+    }
+
+
+    function manageWeeks(){
+
+        v_numofweeks_changed_to = $("#replyNumber").val();
+        diff = v_numofweeks_changed_to - v_numofweeks;
+
+        if(diff > 0){
+            console.log("add " + diff + " new columns");
+            addWeeks(diff);
+        }
+        else if (diff < 0){
+            console.log("delete " + diff*(-1) + " columns");
+            deleteWeeks(diff*(-1));
+        }
+        else {
+            alert("How did this happen?!?");
+        }
+
+        v_numofweeks = v_numofweeks_changed_to;
+
+    }
+
+    function startOfWeek(date){
+
+        var diff = date.getDate() - date.getDay() + (date.getDay() === 0 ? -6 : 1);
+        return new Date(date.setDate(diff));
+
+    }
+
+    function setWeekStart(){
+
+        if( ! isNaN(Date.parse(new Date($('#weekstart').val()))) ){ //only if date UI field has valid date
+            weekStart = startOfWeek( new Date($('#weekstart').val().replace(/-/g,"/")) );
+        }
+    }
+
+    function formatDate(date) {
+        var d = new Date(date),
+            month = '' + (d.getMonth() + 1),
+            day = '' + d.getDate(),
+            year = d.getFullYear();
+
+        if (month.length < 2)
+            month = '0' + month;
+        if (day.length < 2)
+            day = '0' + day;
+
+        return [year, month, day].join('-');
+    }
+
+    function formatDateHuman(date) {
+        var d = new Date(date),
+            month = '' + (d.getMonth() + 1),
+            day = '' + d.getDate(),
+            year = d.getFullYear();
+
+        if (month.length < 2)
+            month = '0' + month;
+        if (day.length < 2)
+            day = '0' + day;
+
+        return [day,  months[d.getMonth()], d.getFullYear()%100].join('-');
+    }
+
+    </script>
+
+    <script>
+
+        $(document).ready(function() {
+
+            $('#teamtable').DataTable({
+                paging: false,
+                scrollY: 400,
+                fixedHeader: false,
+                "sScrollX": "100%",
+                "bScrollCollapse": true,
+                order: [[1, 'asc']]
+            });
+
+            $('.select').selectpicker();
+            try {
+                datestring = weekStart.getFullYear() + "-" +("0" + (weekStart.getMonth()+1)).slice(-2) + "-" + ("0"+(weekStart.getDate())).slice(-2);
+                $('#weekstart').val(datestring)
+            }
+            catch(e) {}
+
+            /* ******************************************* PRE POPULATE Start*********************************************
+               ******************************************* PRE POPULATE *********************************************
+               ******************************************* PRE POPULATE *********************************************
+            */
+
+
+            {% for row in static_tbl %}
+                multperson.push('{{row.person_id}}');
+                    var value = '{{row.person_id}}';
+                    var record = {};
+                    record.first_name = '{{row.name}}';
+                    record.domain_name = '{{row.domain_name}}';
+                    record.role = '{{row.role}}';
+                    record.rate = '{{row.rate}}';
+                    record.loc = '{{row.loc}}';
+
+                    markuptropen = "<tr id='"+value+"'>"
+                    markupTDData = "<td>"+record.first_name+"</td><td>"+record.loc+"</td><td>"+record.domain_name+"</td><td>"+record.role+"</td><td id='rate_"+value+"'>"+record.rate+"</td><td><span id='total_hrs_"+value+"'></span></td><td><span id='qa_cost_"+value+"'></span></td>";
+                    var controls = "";
+                    console.log(markupTDData);
+                    markupExtraTd = '';
+                    markuptrclose= "</tr>";
+                    markup = markuptropen + markupTDData + markupExtraTd + markuptrclose;
+                    $("#loadTable tbody").append(markup);
+            {% endfor %}
+
+            {% if datahead.weekstart|length == 10 %}
+                var ws = '{{datahead.weekstart}}';
+                weekStart = new Date(ws.split('-')[0], (ws.split('-')[1]-1), ws.split('-')[2]);
+                $("#weekstart").val(ws);
+            {% endif %}
+
+
+            addWeeks({{datahead.numofweeks}});
+
+            {% for row in datadetails %}
+                hrs = "{{row.hrs}}";
+                if (hrs == "None") hrs = "";
+                $("[name='f_week_hrs_{{row.person_id}}_{{row.week}}']")[0].innerHTML = encodeURIComponent(hrs);
+            {% endfor %}
+
+            $('#resSelect').selectpicker('val', multperson);
+            $('#resSelect').selectpicker('refresh');
+            v_numofweeks = '{{datahead.numofweeks}}';
+
+            refreshCosts(multperson);
+
+
+
+            /* ******************************************* PRE POPULATE End*********************************************
+               ******************************************* PRE POPULATE *********************************************
+               ******************************************* PRE POPULATE *********************************************
+            */
+
+            /* BELOW IS FOR ADD/REM person */
+            $('.selectpicker').on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
+              currentVal=$('.selectpicker').val();
+
+                if(currentVal.length - previousValue.length > 0){
+                    // Add difference
+                    diff = $(currentVal).not(previousValue).get();
+                    headcolcount = $("#loadTable")[0].rows[0].cells.length;
+                    extracoltoadd = headcolcount - fixedCols;
+
+                    $.each(diff, function( index, value ) {
+                        record = {};
+                        $.each(persons, function( pidx, pvalue ) {
+                            console.log("iterating over " + pvalue.vnid );
+                            if(pvalue.vnid == value){
+                                record = pvalue;
+                                return false;
+                            }
+                        });
+                        console.log(" Found record "); console.log(record);
+                        markuptropen = "<tr id='"+value+"'>"
+                        markupTDData = "<td><input type='hidden' name='f_vnid' value='"+value+"'>"+record.first_name+"</td><td>"+record.loc+"</td><td>"+record.domain_name+"</td><td>"+record.role+"</td><td id='rate_"+value+"'>"+record.rate+"</td><td><span id='total_hrs_"+value+"'></span></td><td><span id='qa_cost_"+value+"'></span></td>";
+                        var controls = "<div><span onclick='sp(this);'> L </span><span onclick='sp(this);'> R </span><span onclick='sp(this);'> U </span><span onclick='sp(this);'> D </span></div>";
+                        console.log(markupTDData);
+                        markupExtraTd = '';
+                        for(i = 0; i < extracoltoadd; i++){
+                            headdate = $("#loadTable")[0].rows[0].cells[fixedCols+i].innerHTML;
+                            headdate = formatDate(new Date(2000+parseInt(headdate.split('-')[2]),months.indexOf(headdate.split('-')[1]),headdate.split('-')[0]));
+                            markupExtraTd = markupExtraTd + "<td style='font-size:x-small'><input type='text' size=10 name='f_week_hrs_"+value+"_"+headdate+"'>"+controls+"</td>";
+                        }
+                        markuptrclose= "</tr>";
+                        markup = markuptropen + markupTDData + markupExtraTd + markuptrclose;
+                        $("#loadTable tbody").append(markup);
+                        multperson.push(value);
+                    });
+                }
+                else if(currentVal.length - previousValue.length < 0){
+                    // Remove difference
+                    diff = $(previousValue).not(currentVal).get();
+
+                    $.each(diff, function( index, value ) {
+
+                        $('#loadTable > tbody  > tr').each(function(index,tr){
+                            //console.log(index); console.log(tr); console.log(this.id);
+                            if(value == this.id){
+                                $(this).remove();
+                                multperson = multperson.filter(function(e) { return e !== value });
+                                refreshCosts(multperson);
+                            }
+                        });
+
+                    });
+                }
+                else {
+                    console.log("I DONT KNOW.. prev.. curr");
+                    console.log(previousValue);colsole.log(currentVal);
+                }
+            });
+
+            $("input[name^='f_week_hrs_']").change(changeInput);
+            $("input[name^='f_week_hrs_']").blur(changeInput);
+        } );
+
+        function changeInput(){
+                console.log(this);
+                vnid = this.name.split("_")[3];
+                set_total_qa(vnid,cal_total_qa(vnid));
+                set_qa_cost(vnid,cal_qa_cost(vnid));
+                refreshCosts(multperson);
+        }
+
+        function cal_total_qa(vnid){
+            var total_qa=0;
+            $("[name^='f_week_hrs_"+vnid+"']").each(function(idx,val){
+                if(!isNaN(parseFloat(this.innerHTML))){
+                    total_qa=parseFloat(total_qa)+parseFloat(this.innerHTML);
+                }
+            });
+            return total_qa;
+        }
+
+        function set_total_qa(vnid,hrs){
+            $("#total_hrs_"+vnid).prop("innerHTML",hrs);
+        }
+
+        function cal_qa_cost(vnid){
+            var qa_cost=0;
+            var total_hrs = 0;
+            var rate = 0;
+
+            total_hrs =  parseFloat($("#total_hrs_"+vnid).prop("innerHTML"));
+            rate =   parseFloat($("#rate_"+vnid).prop("innerHTML"));
+            qa_cost = parseFloat(total_hrs * rate).toFixed(2);
+
+            if(isNaN(qa_cost)){
+                qa_cost = 0;
+            }
+
+            return qa_cost;
+        }
+
+        function set_qa_cost(vnid,cost){
+            $("#qa_cost_"+vnid).prop("innerHTML",cost.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,"));
+        }
+
+        function refreshCosts(arrayOfVNIDs){
+            var headQAHrs = 0;
+            var headQACost = 0;
+            console.log("Refreshing");
+
+            //refresh row totals
+            for(i=0; i<arrayOfVNIDs.length;i++){
+                set_total_qa(arrayOfVNIDs[i],cal_total_qa(arrayOfVNIDs[i]));
+                set_qa_cost(arrayOfVNIDs[i],cal_qa_cost(arrayOfVNIDs[i]));
+            }
+
+            //refresh head totals
+            $("[id^='total_hrs_']").each(function(){
+                if(!isNaN(parseFloat(this.innerHTML)))
+                    headQAHrs = parseFloat(headQAHrs) + parseFloat(this.innerHTML);
+                    headQAHrs = (Math.round(headQAHrs * 100) / 100).toFixed(2);
+            });
+
+            $("[id^='qa_cost_']").each(function(){
+                ct = parseFloat(this.innerHTML.replace(/,/g,""));
+                if(!isNaN(ct))
+                    headQACost = parseFloat(headQACost) + parseFloat(ct);
+                    headQACost = (Math.round(headQACost * 100) / 100).toFixed(2);
+            });
+
+            $("#headQAHrs").prop("innerHTML",headQAHrs.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,"));
+            $("#headQACost").prop("innerHTML","$" + headQACost.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,"));
+        }
+
+    </script>
+
+
+    <div class="contentnav overflow-auto" style="min-height:400px;">
+        <form name="initRFS" id="initRFS" method="post" action="./resource-loading">
+            <table class="rbstable"><tr><td>Week Start </td><td>{{datahead.weekstart}}</td></tr>
+            <tr><td># of weeks </td><td> {{datahead.numofweeks}}</td></tr></table>
+            <br>
+        <div>
+            <table border="1" id="loadTable" class="rfstables rbstable">
+                <thead>
+                <tr>
+                    <th style="max-width:150px; min-width:150px;font-size:small">Resource</th>
+                    <th style="max-width:75px; min-width:75px;font-size:small">Location</th>
+                    <th style="max-width:150px; min-width:150px;font-size:small">Domain</th>
+                    <th style="max-width:150px; min-width:150px;font-size:small">Role</th>
+                    <th style="max-width:100px; min-width:100px;font-size:small">Rate</th>
+                    <th style="max-width:75px; min-width:75px;font-size:small">Total Hrs.</th>
+                    <th style="max-width:75px; min-width:75px;font-size:small">QA $</th>
+                </tr>
+                </thead>
+            <tbody>
+            </tbody>
+            </table>
+            <span>
+            <table class="rbstable">
+                <tr>
+                    <th>
+                        <span>Total QA Hrs </span> <span id="headQAHrs"></span>
+                    </th>
+                    <th>
+                        <span>Total QA Cost </span> <span id="headQACost"></span>
+                    </th>
+                </tr>
+            </table>
+        </span>
+        </div>
+        </form>
+    </div>
+
+
+{% endblock %}

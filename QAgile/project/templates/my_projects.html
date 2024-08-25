@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block content %}
+    {% if request.GET.error %}
+        <p>{{request.GET.error}}</p>
+    {% endif %}
+
+    <h1>MY PROJECTS</h1>
+
+{% endblock %}

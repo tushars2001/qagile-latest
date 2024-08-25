@@ -1,0 +1,752 @@
+{% extends 'headmenu.html' %}
+
+{% block rfs_content %}
+    {% load static %}
+
+    <script>
+        multperson = [];
+        persons = {{persons|safe|escape}};
+        weekStart = startOfWeek(new Date());
+        //weekStart.setDate(weekStart.getDate() - 1);
+        v_numofweeks = 0;
+        fixedCols = 7;
+
+        function addWeeks(n){
+
+
+            headcolcount = $("#loadTable")[0].rows[0].cells.length;
+            weekcols = headcolcount - fixedCols;
+
+            for(i=0; i<n; i++){
+                pos = $("#loadTable").find("tr:first th").length-1;
+                tmpweekstart=new Date(weekStart.getTime());
+                //tmpweekstart.setDate(tmpweekstart.getDate() - 1); as weekStart is updated
+                weekstartdt = formatDate( tmpweekstart.setDate(tmpweekstart.getDate()+(weekcols+i)*7) );
+                humandate = formatDateHuman( tmpweekstart );
+                $('#loadTable').find('tr').each(function(a,b){
+                    var vnid = this.id;
+                    $(this).find('th').eq(pos).after('<th nowrap style="font-size:x-small;text-align:center;">'+humandate+'</th>');
+                    if(vnid.length){
+                        var td_name = "f_week_hrs_"+vnid+"_"+weekstartdt;
+                        //var controls = "<div><span style='cursor: pointer;' onclick='sp(this);'> L </span><span style='cursor: pointer;' onclick='sp(this);'> R </span><span style='cursor: pointer;' onclick='sp(this);'> U </span><span style='cursor: pointer;' onclick='sp(this);'> D </span> <span onclick='availability(this, event);'> info </span></div>";
+                        var controls = "<div class='controls'><span style='cursor: pointer;' onclick='sp(this);'> L </span><span style='cursor: pointer;' onclick='sp(this);'> R </span><span onclick='availability(this, event);'> info </span></div>";
+                        $(this).find('td').eq(pos).after("<td style='font-size:x-small'><input type='text' name='"+td_name+"'  size=5><span name='f_week_planned_hrs_" + vnid + "_" + weekstartdt +"'>[...]</span>"+controls+"</td>");
+                        updatePlannedHrs(vnid, weekstartdt);
+                    }
+                });
+
+
+
+            }
+
+            $("input[name^='f_week_hrs_']").change(changeInput);
+            $("input[name^='f_week_hrs_']").blur(changeInput);
+        }
+
+        function deleteWeeks(n){
+            for(i=0; i<n; i++){
+                pos = $("#loadTable").find("tr:first th").length;
+                if(pos < (fixedCols + 1)) return;
+                $('#loadTable th:nth-child('+pos+'),#loadTable td:nth-child('+pos+')').remove();
+            }
+        }
+
+
+    function manageWeeks(){
+
+        v_numofweeks_changed_to = $("#replyNumber").val();
+        diff = v_numofweeks_changed_to - v_numofweeks;
+
+        if(diff > 0){
+            console.log("add " + diff + " new columns");
+            addWeeks(diff);
+        }
+        else if (diff < 0){
+            console.log("delete " + diff*(-1) + " columns");
+            deleteWeeks(diff*(-1));
+        }
+        else {
+            alert("How did this happen?!?");
+        }
+
+        v_numofweeks = v_numofweeks_changed_to;
+
+        refreshCosts(multperson);
+
+    }
+
+    function updatePlannedHrs(vnid, week){
+    {% if rfs_request_data.rfs_status != 'APPROVED' %} //not needed for approved RFSs
+        console.log(week);
+         data = {
+                    'vnid': vnid,
+                    'week': week
+        };
+        $.ajax({
+          url: "/rfs/request-for-service/person/week",
+          type: "get", //send it through get method
+          data: data,
+          success: function(response) {
+            console.log("success");
+            try {
+                if(response.success == "True"){
+                    let planned_name = "f_week_planned_hrs_"+ response.summary.vnid + '_' + response.summary.week;
+                    let name = "f_week_hrs_"+ response.summary.vnid + '_' + response.summary.week;
+                    total_hrs = response.summary.total_hrs;
+                    response.data.forEach(function(v){
+                        if(v.rfs_request_id == rfs_request_id) {
+                            total_hrs = total_hrs - v.hrs;
+                            return;
+                        }
+                    });
+                    $('span[name="'+planned_name+'"]')[0].innerHTML = "[" + response.summary.total_hrs + "]";
+                    try{
+                        sum = parseFloat(response.summary.total_hrs) + parseFloat($("[name='"+name+"']")[0].value);
+                        console.log(sum);
+                        if(sum > 40){
+                            $("[name='"+name+"']").parent().attr("bgcolor","#FFA889");
+                        }
+                    }
+                    catch(e){console.log("Error setting colors:"); console.log(e);}
+                }
+                else{
+                }
+            }
+            catch(e){
+            }
+          },
+          error: function(response) {
+            console.log(response);
+          }
+        });
+    {% endif %}
+    }
+
+    function startOfWeek(date){
+
+        var diff = date.getDate() - date.getDay() + (date.getDay() === 0 ? -6 : 1);
+        dt = new Date(date.setDate(diff));
+        dt.setDate(dt.getDate() - 1);
+        return dt;
+
+    }
+
+    function setWeekStart(){
+
+        if( ! isNaN(Date.parse(new Date($('#weekstart').val()))) ){ //only if date UI field has valid date
+            weekStart = startOfWeek( new Date($('#weekstart').val().replace(/-/g,"/")) );
+        }
+    }
+
+    function formatDate(date) {
+        var d = new Date(date),
+            month = '' + (d.getMonth() + 1),
+            day = '' + d.getDate(),
+            year = d.getFullYear();
+
+        if (month.length < 2)
+            month = '0' + month;
+        if (day.length < 2)
+            day = '0' + day;
+
+        return [year, month, day].join('-');
+    }
+
+    function formatDateHuman(date) {
+        var d = new Date(date),
+            month = '' + (d.getMonth() + 1),
+            day = '' + d.getDate(),
+            year = d.getFullYear();
+
+        if (month.length < 2)
+            month = '0' + month;
+        if (day.length < 2)
+            day = '0' + day;
+
+        return [day,  months[d.getMonth()], d.getFullYear()%100].join('-');
+    }
+
+    function sp(ob,clicked){
+        console.log(ob);
+        if(typeof clicked == 'undefined')
+            var clicked = ob.innerHTML.trim();
+        var vnid = $(ob).parent().parent().parent()[0].id;
+        var val_to_copy = $(ob).parent().prev().prev().val();
+
+        if(clicked == 'R'){
+            console.log('Right');
+            var row_objs = $( "input[name*='"+vnid+"']");
+            var clicked_dtstamp = $(ob).parent().prev().prev()[0].name.split('_')[4].replace(/-/g, "");
+
+            $(row_objs).each(function(idx,v){
+                thisdt_stamp = v.name.split('_')[4].replace(/-/g, "");
+                if(thisdt_stamp > clicked_dtstamp)
+                    $(v).val(val_to_copy);
+                    $(v).change();
+            });
+
+
+        }
+        if(clicked == 'L'){
+            console.log('Left');
+            var row_objs = $( "input[name*='"+vnid+"']");
+            var clicked_dtstamp = $(ob).parent().prev().prev()[0].name.split('_')[4].replace(/-/g, "");
+
+            $(row_objs).each(function(idx,v){
+                thisdt_stamp = v.name.split('_')[4].replace(/-/g, "");
+                if(thisdt_stamp < clicked_dtstamp)
+                    $(v).val(val_to_copy);
+                    $(v).change();
+            });
+        }
+        if(clicked == 'U'){
+            console.log('Up');
+            var clicked_dtstamp = $(ob).parent().prev().prev()[0].name.split('_')[4];
+            var col_objs = $( "input[name*='"+clicked_dtstamp+"']");
+            var found = 0;
+            $(col_objs).each(function(idx,v){
+                this_vnid = $(v).parent().parent()[0].id;
+
+                if(this_vnid == vnid){
+                    found = 1
+                }
+                if(!found){
+                    $(v).val(val_to_copy);
+                    $(v).change();
+                }
+            });
+        }
+
+        if(clicked == 'D'){
+            console.log('Down');
+            var clicked_dtstamp = $(ob).parent().prev().prev()[0].name.split('_')[4];
+            var col_objs = $( "input[name*='"+clicked_dtstamp+"']");
+            var found = 0;
+            $(col_objs).each(function(idx,v){
+                this_vnid = $(v).parent().parent()[0].id;
+
+                if(this_vnid == vnid){
+                    found = 1
+                }
+                if(found){
+                    $(v).val(val_to_copy);
+                    $(v).change();
+                }
+            });
+
+        }
+        refreshCosts(multperson);
+
+    }
+
+    function calculateCosts(){
+
+    }
+
+    function availability(ob, event){
+    console.log(event.clientX); console.log(event.clientY);
+    var top = event.clientY;
+    var left = event.clientX
+    {% if rfs_request_data.rfs_status != 'APPROVED' %} //Do not need planning hrs for approved rfs
+        data = {
+                    'vnid': $(ob).parent().parent().parent()[0].id,
+                    'week': $(ob).parent().prev().prev()[0].name.split('_')[4]
+        };
+        $("#availability_info").css("position:fixed;font-size:small;display:none;");
+        // $("#availability_info").css({left: $(ob).offset().left, top: $(ob).offset().top+5});
+        $("#availability_info").css({left: left, top: top+5});
+        $.ajax({
+          url: "/rfs/request-for-service/person/week",
+          type: "get", //send it through get method
+          data: data,
+          success: function(response) {
+            console.log("success");
+            document.getElementById("availability_info").innerHTML = "";
+
+            try {
+                let tbl_open = "<table class='rbstable'>";
+                    let tr1 = "<tr><td colspan='2' style='text-aling:right;background-color:black;color:white;'";
+                    tr1 = tr1 + "onclick=\"$('#availability_info').hide();\">X</td></tr>";
+                if(response.success == "True"){
+                    let total_hrs = response.summary.total_hrs;
+                    response.data.forEach(function(v){
+                        if(v.rfs_request_id == rfs_request_id) {
+                            total_hrs = total_hrs - v.hrs;
+                            return;
+                        }
+                    });
+                    let tr_summary = "<tr><td>Total Hrs.</td><td>" + total_hrs + "</td><tr>";
+                    let tr_detail = ""
+                    for(i=0; i<response.data.length; i++){
+                        if(response.data[i].rfs_request_id != rfs_request_id){ //skipping current rfs
+                            tr_detail = tr_detail + "<tr><td><a href='/rfs/request-for-service/resource-loading?rfs_request_id=" + response.data[i].link + "' target='blank'>" + response.data[i].project_id + "</a></td><td>" + response.data[i].hrs + "</td><tr>";
+                        }
+                    }
+                    let tbl_close = "</table>";
+                    $("#availability_info").append(tbl_open + tr1 + tr_summary + tr_detail + tbl_close)
+
+                    $("#availability_info").show();
+                }
+                else{
+                    $("#availability_info").append("<tr><td colspan='2'>Some Error in getting data.</td>");
+                }
+            }
+            catch(e){
+                $("#availability_info").append("Some Error in getting data");
+            }
+
+          },
+          error: function(response) {
+            alert("Some Error.");
+            console.log(response);
+          }
+        });
+    {% endif %}
+    }
+
+
+    function setMargins() {
+
+        width = $(window).width();
+        $(".contentnav").width(width*.8);
+        containerWidth = $(".contentnav").width();
+        leftMargin = (width-containerWidth)/2;
+        offset = $(".contentnav").position().left;
+        $(".contentnav").css("marginLeft", leftMargin - offset);
+    }
+
+    </script>
+
+    <script>
+
+        $(document).ready(function() {
+
+            $('#teamtable').DataTable({
+                paging: false,
+                scrollY: 400,
+                fixedHeader: false,
+                "sScrollX": "100%",
+                "bScrollCollapse": true,
+                order: [[1, 'asc']]
+            });
+
+            $('.select').selectpicker();
+            try {
+                datestring = weekStart.getFullYear() + "-" +("0" + (weekStart.getMonth()+1)).slice(-2) + "-" + ("0"+(weekStart.getDate())).slice(-2);
+                $('#weekstart').val(datestring)
+            }
+            catch(e) {}
+
+            /* ******************************************* PRE POPULATE start *********************************************
+               ******************************************* PRE POPULATE *********************************************
+               ******************************************* PRE POPULATE *********************************************
+            */
+
+
+            {% for row in static_tbl %}
+                multperson.push('{{row.person_id}}');
+                    var value = '{{row.person_id}}';
+                    var record = {};
+                    record.first_name = '{{row.name}}';
+                    record.domain_name = '{{row.domain_name}}';
+                    record.role = '{{row.role}}';
+                    record.rate = '{{row.rate}}';
+                    record.loc = '{{row.loc}}';
+
+                    markuptropen = "<tr id='"+value+"'>"
+                    markupTDData = "<td><input type='hidden' name='f_vnid' value='"+value+"'>"+record.first_name+"</td><td>"+record.loc+"</td><td>"+record.domain_name+"</td><td>"+record.role+"</td><td id='rate_"+value+"'>"+record.rate+"</td><td><span id='total_hrs_"+value+"'></span></td><td><span id='qa_cost_"+value+"'></span></td>";
+                    //var controls = "<div><span style='cursor: pointer;' onclick='sp(this);'> L </span><span style='cursor: pointer;' onclick='sp(this);'> R </span><span style='cursor: pointer;' onclick='sp(this);'> U </span><span style='cursor: pointer;' onclick='sp(this);'> D </span><span onclick='availability(this, event);'> info </span></div>";
+                    var controls = "<div class='controls'><span style='cursor: pointer;' onclick='sp(this);'> L </span><span style='cursor: pointer;' onclick='sp(this);'> R </span><span onclick='availability(this, event);'> info </span></div>";
+                    console.log(markupTDData);
+                    markupExtraTd = '';
+                    markuptrclose= "</tr>";
+                    markup = markuptropen + markupTDData + markupExtraTd + markuptrclose;
+                    $("#loadTable tbody").append(markup);
+            {% endfor %}
+
+            {% if datahead.weekstart|length == 10 %}
+                var ws = '{{datahead.weekstart}}';
+                weekStart = new Date(ws.split('-')[0], (ws.split('-')[1]-1), ws.split('-')[2]);
+                $("#weekstart").val(ws);
+            {% endif %}
+
+
+            addWeeks({{datahead.numofweeks}});
+
+            {% for row in datadetails %}
+                hrs = "{{row.hrs}}";
+                if (hrs == "None") hrs = "";
+                $("input[name='f_week_hrs_{{row.person_id}}_{{row.week}}']").val(hrs);
+            {% endfor %}
+
+            $('#resSelect').selectpicker('val', multperson);
+            $('#resSelect').selectpicker('refresh');
+            v_numofweeks = '{{datahead.numofweeks}}';
+
+            refreshCosts(multperson);
+
+
+
+            /* ******************************************* PRE POPULATE ends *********************************************
+               ******************************************* PRE POPULATE *********************************************
+               ******************************************* PRE POPULATE *********************************************
+            */
+
+            $('.selectpicker').on('hide.bs.select', function (e, clickedIndex, isSelected, previousValue) {
+                console.log("Hiding now");
+                $('#resSelect option:selected').prependTo('#resSelect');
+                $(this).selectpicker('refresh');
+            });
+
+            /* BELOW IS FOR ADD/REM person */
+            $('.selectpicker').on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
+
+              currentVal=$('.selectpicker').val();
+
+                if(currentVal.length - previousValue.length > 0){
+                    // Add difference
+                    diff = $(currentVal).not(previousValue).get();
+                    headcolcount = $("#loadTable")[0].rows[0].cells.length;
+                    extracoltoadd = headcolcount - fixedCols;
+
+                    $.each(diff, function( index, value ) {
+                        record = {};
+                        $.each(persons, function( pidx, pvalue ) {
+                            console.log("iterating over " + pvalue.vnid );
+                            if(pvalue.vnid == value){
+                                record = pvalue;
+                                return false;
+                            }
+                        });
+                        console.log(" Found record "); console.log(record);
+                        markuptropen = "<tr id='"+value+"'>"
+                        markupTDData = "<td><input type='hidden' name='f_vnid' value='"+value+"'>"+record.first_name+"</td><td>"+record.loc+"</td><td>"+record.domain_name+"</td><td>"+record.role+"</td><td id='rate_"+value+"'>"+record.rate+"</td><td><span id='total_hrs_"+value+"'></span></td><td><span id='qa_cost_"+value+"'></span></td>";
+                        //var controls = "<div><span style='cursor: pointer;' onclick='sp(this);'> L </span><span style='cursor: pointer;' onclick='sp(this);'> R </span><span style='cursor: pointer;' onclick='sp(this);'> U </span><span style='cursor: pointer;' onclick='sp(this);'> D </span><span onclick='availability(this, event);'> info </span></div>";
+                        var controls = "<div class='controls'><span style='cursor: pointer;' onclick='sp(this);'> L </span><span style='cursor: pointer;' onclick='sp(this);'> R </span><span onclick='availability(this, event);'> info </span></div>";
+                        console.log(markupTDData);
+                        markupExtraTd = '';
+                        for(i = 0; i < extracoltoadd; i++){
+                            //headdate = $("#loadTable")[0].rows[0].cells[fixedCols+i].innerHTML;
+                            if (typeof $("#loadTable")[0].rows[0].cells[fixedCols+i].children[0] == 'undefined'){ //when no datatable options like sorting etc
+                                headdate = $("#loadTable")[0].rows[0].cells[fixedCols+i].innerHTML;
+                            }
+                            else{
+                                headdate = $("#loadTable")[0].rows[0].cells[fixedCols+i].children[0].firstChild.nodeValue;
+                            }
+                            headdate = formatDate(new Date(2000+parseInt(headdate.split('-')[2]),months.indexOf(headdate.split('-')[1]),headdate.split('-')[0]));
+                            markupExtraTd = markupExtraTd + "<td style='font-size:x-small'><input type='text' size=5 name='f_week_hrs_"+value+"_"+headdate+"'><span name='f_week_planned_hrs_"+value+"_"+headdate+"'></span>"+controls+"</td>";
+                        }
+                        markuptrclose= "</tr>";
+                        markup = markuptropen + markupTDData + markupExtraTd + markuptrclose;
+                        $("#loadTable tbody").append(markup);
+                        multperson.push(value);
+                        for(i = 0; i < extracoltoadd; i++){ //update planned hours for newly added columns for vnid value
+                            //headdate = $("#loadTable")[0].rows[0].cells[fixedCols+i].innerHTML;
+                            if (typeof $("#loadTable")[0].rows[0].cells[fixedCols+i].children[0] == 'undefined'){
+                                headdate = $("#loadTable")[0].rows[0].cells[fixedCols+i].innerHTML;
+                            }
+                            else{
+                                headdate = $("#loadTable")[0].rows[0].cells[fixedCols+i].children[0].firstChild.nodeValue;
+                            }
+                            headdate = formatDate(new Date(2000+parseInt(headdate.split('-')[2]),months.indexOf(headdate.split('-')[1]),headdate.split('-')[0]));
+                            updatePlannedHrs(value, headdate);
+                        }
+                        $("input[name^='f_week_hrs_']").change(changeInput);
+                        $("input[name^='f_week_hrs_']").blur(changeInput);
+                    });
+                }
+                else if(currentVal.length - previousValue.length < 0){
+                    // Remove difference
+                    diff = $(previousValue).not(currentVal).get();
+
+                    $.each(diff, function( index, value ) {
+
+                        $('#loadTable > tbody  > tr').each(function(index,tr){
+                            //console.log(index); console.log(tr); console.log(this.id);
+                            if(value == this.id){
+                                $(this).remove();
+                                multperson = multperson.filter(function(e) { return e !== value });
+                                refreshCosts(multperson);
+                            }
+                        });
+
+                    });
+                }
+                else {
+                    console.log("I DONT KNOW.. prev.. curr");
+                    console.log(previousValue);colsole.log(currentVal);
+                }
+            });
+
+            $("input[name^='f_week_hrs_']").change(changeInput);
+            $("input[name^='f_week_hrs_']").blur(changeInput);
+            $('#resSelect option:selected').prependTo('#resSelect');
+            $('#resSelect').selectpicker('refresh');
+            // $('#loadTable').stickyTable();
+            $("#loadTable").dataTable({
+                searching: false, paging: false, info: false
+            });
+
+            formChanged = false;
+            setMargins();
+            $(window).resize(function() {
+                setMargins();
+            });
+        } );
+
+
+
+    </script>
+
+    <script>
+        function changeInput(){
+                console.log(this);
+                vnid = this.name.split("_")[3];
+                set_total_qa(vnid,cal_total_qa(vnid));
+                set_qa_cost(vnid,cal_qa_cost(vnid));
+                refreshCosts(multperson);
+                try{
+                    sum = parseFloat($("[name='f_week_planned_hrs_"+ this.name.replace('f_week_hrs_','') +"']")[0].innerHTML.replace("[","").replace("]","")) + parseFloat($("[name='"+this.name+"']")[0].value);
+                    console.log(sum);
+                    if(sum > 40 && parseFloat($("[name='"+this.name+"']")[0].value) > 0){
+                        $("[name='"+this.name+"']").parent().attr("bgcolor","#FFA889");
+                    }
+                    else{
+                        $("[name='"+this.name+"']").parent().attr("bgcolor","");
+                    }
+                }
+                catch(e){console.log("Error setting colors:"); console.log(e);}
+        }
+
+        function cal_total_qa(vnid){
+            var total_qa=0;
+            $("input[name^='f_week_hrs_"+vnid+"']").each(function(idx,val){
+                if(!isNaN(parseFloat(this.value))){
+                    total_qa=parseFloat(total_qa)+parseFloat(this.value);
+                }
+            });
+            return total_qa;
+        }
+
+        function set_total_qa(vnid,hrs){
+            $("#total_hrs_"+vnid).prop("innerHTML",hrs);
+        }
+
+        function cal_qa_cost(vnid){
+            var qa_cost=0;
+            var total_hrs = 0;
+            var rate = 0;
+
+            total_hrs =  parseFloat($("#total_hrs_"+vnid).prop("innerHTML"));
+            rate =   parseFloat($("#rate_"+vnid).prop("innerHTML"));
+
+            qa_cost = parseFloat(total_hrs * rate);
+            qa_cost = (Math.round(qa_cost * 100) / 100).toFixed(2)
+            if(isNaN(qa_cost)){
+                qa_cost = 0;
+            }
+
+            return qa_cost;
+        }
+
+        function set_qa_cost(vnid,cost){
+            $("#qa_cost_"+vnid).prop("innerHTML",cost.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,"));
+        }
+
+        function refreshCosts(arrayOfVNIDs){
+            var headQAHrs = 0;
+            var headQACost = 0;
+            console.log("Refreshing");
+
+            //refresh row totals
+            for(i=0; i<arrayOfVNIDs.length;i++){
+                set_total_qa(arrayOfVNIDs[i],cal_total_qa(arrayOfVNIDs[i]));
+                set_qa_cost(arrayOfVNIDs[i],cal_qa_cost(arrayOfVNIDs[i]));
+            }
+
+            //refresh head totals
+            $("[id^='total_hrs_']").each(function(){
+                if(!isNaN(parseFloat(this.innerHTML)))
+                    headQAHrs = parseFloat(headQAHrs) + parseFloat(this.innerHTML);
+                    headQAHrs = (Math.round(headQAHrs * 100) / 100).toFixed(2);
+            });
+
+            $("[id^='qa_cost_']").each(function(){
+                ct = parseFloat(this.innerHTML.replace(/,/g,""));
+                if(!isNaN(ct))
+                    headQACost = parseFloat(headQACost) + parseFloat(ct);
+                    headQACost = (Math.round(headQACost * 100) / 100).toFixed(2);
+            });
+
+            $("#headQAHrs").prop("innerHTML",headQAHrs.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,"));
+            $("#headQACost").prop("innerHTML","$" + headQACost.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,"));
+
+            {% if rfs_request_data.rfs_status == 'APPROVED' %}
+                $("input[name^='f_week_hrs_']").attr("disabled","disabled");
+                $("span[name^='f_week_planned_hrs_']").hide();
+                $(".controls").hide();
+                $(".selectpickerspan").hide()
+
+            {% endif %}
+        }
+    </script>
+
+    <script>
+
+        function printSelectedItems() {
+          var selectedValues = [];
+          $("#resSelect :selected").each(function() {
+            selectedValues.push($(this).val());
+          });
+          alert(selectedValues);
+        };
+
+
+        //$('#resSelect').selectpicker();
+            var $menu = $('#resSelect').data('selectpicker').$menu,
+              $options = $('#resSelect').find('option');
+        // Function to update select based on BootstrapSelect <li>
+        function updateOptions() {
+          var optionArray = [];
+          $menu.find('li').each(function(i, el) {
+            optionArray.push($options.eq($(el).data('originalIndex')));
+          });
+          $('#resSelect').append(optionArray);
+        }
+
+        // Make selected items always go before the none selected
+        $('#resSelect').on('change.bs.select', function() {
+          //$('#resSelect option:selected').prependTo('#resSelect');
+          //$(this).selectpicker('refresh');
+        });
+
+        // Allow jQueryUI sortable on the selected items to define order
+        $menu.sortable({
+          items: ".selected",
+          beforeStop: function(event, ui) {
+            updateOptions();
+            alert('Selected items onBeforeStop of sortable');
+            printSelectedItems();
+            //$('#mySelect').selectpicker('refresh');
+          }
+        });
+
+
+        // Testing form submission
+        var form = document.forms.myform,
+          elem = form.elements;
+
+        form.onsubmit = function() {
+          alert('Selected items after form submission');
+          printSelectedItems();
+          alert('form submitted!');
+          return true;
+        }
+        var intrvl;
+        function scrollSheet(direction){
+            duration = 100;
+            //$(".arrows").css("opacity","50%");
+            if(direction == 'L'){
+                intrvl = setInterval(function(){
+                $(".contentnav").scrollLeft($(".contentnav").scrollLeft()-25);
+                }, duration);
+            }
+            if(direction == 'R'){
+                intrvl = setInterval(function(){
+                $(".contentnav").scrollLeft($(".contentnav").scrollLeft()+25);
+                }, duration);
+            }
+            if(direction == 'U'){
+                intrvl = setInterval(function(){
+                    $(window).scrollTop($(window).scrollTop()-25);
+                }, duration);
+            }
+            if(direction == 'D'){
+                intrvl = setInterval(function(){
+                    $(window).scrollTop($(window).scrollTop()+25);
+                }, duration);
+            }
+        }
+
+
+    </script>
+
+    <style>
+        .arrows {
+            opacity:10%;
+        }
+    </style>
+
+
+    <div class="contentnav overflow-auto" style="min-height:400px;">
+        <form name="initRFS" id="initRFS" method="post" action="./resource-loading">
+        {% csrf_token %}
+        <input type="hidden" name="rfs_request_id" value="{{rfs_request_data.link}}">
+        <input type="hidden" value="" name="rfs_status" id="rfs_status">
+        <span class="selectpickerspan">
+            <select name="resources" id="resSelect" class="selectpicker" multiple data-live-search="true" data-actions-box="true" >
+                {% for row in persons %}
+                    <option value="{{row.vnid}}" data-tokens="{{row.vnid}},{{row.domain_name}},{{row.role}}">{{row.first_name}} {{row.last_name}}</option>
+                {% endfor   %}
+            </select>
+        </span>
+        <span class="selectpickerspan">Week Start <input type="date" name="weekstart" id="weekstart" onchange="setWeekStart()" value="{{datahead.weekstart}}"></span>
+        <span class="selectpickerspan"># of weeks <input type="number" style="width:60px" onchange="manageWeeks()" value="{{datahead.numofweeks}}" onkeydown="return false" id="replyNumber" name="numofweeks"  min="0" max="104" data-bind="value:replyNumber" ></span>
+
+        <div>
+            <table border="1" id="loadTable" class="rfstables rbstable">
+                <thead>
+                <tr>
+                    <th style="max-width:150px; min-width:150px;font-size:small">Resource</th>
+                    <th style="max-width:75px; min-width:75px;font-size:small">Location</th>
+                    <th style="max-width:150px; min-width:150px;font-size:small">Domain</th>
+                    <th style="max-width:150px; min-width:150px;font-size:small">Role</th>
+                    <th style="max-width:100px; min-width:100px;font-size:small">Rate</th>
+                    <th style="max-width:75px; min-width:75px;font-size:small">Total Hrs.</th>
+                    <th style="max-width:75px; min-width:75px;font-size:small">QA $</th>
+                </tr>
+                </thead>
+            <tbody>
+            </tbody>
+            </table>
+            <span>
+            <table class="rbstable">
+                <tr>
+                    <th>
+                        <span>Total QA Hrs </span> <span id="headQAHrs"></span>
+                    </th>
+                    <th>
+                        <span>Total QA Cost </span> <span id="headQACost"></span>
+                    </th>
+                </tr>
+            </table>
+        </span>
+        </div>
+        </form>
+    </div>
+
+    <div id="controls" style="left:600px;top:300px;position:fixed;display:none">
+        <table>
+            <tr><td></td><td onmouseover="scrollSheet('U');$('.up').css('opacity','50%');" onmouseout="clearInterval(intrvl);$('.arrows').css('opacity','10%');">
+                <img class="arrows up" style="vertical-align: bottom;" src="{% static 'images/up.png' %}">
+            </td><td></td></tr>
+            <tr>
+                <td onmouseover="scrollSheet('L');$('.left').css('opacity','50%');" onmouseout="clearInterval(intrvl);$('.arrows').css('opacity','10%');">
+                    <img class="arrows left" style="vertical-align: center; " src="{% static 'images/left.png' %}">
+                </td>
+                <td></td>
+                <td onmouseover="scrollSheet('R');$('.right').css('opacity','50%');" onmouseout="clearInterval(intrvl);$('.arrows').css('opacity','10%');">
+                    <img class="arrows right" style="vertical-align: center;" src="{% static 'images/right.png' %}">
+                </td>
+            </tr>
+            <tr><td></td><td onmouseover="scrollSheet('D');$('.down').css('opacity','50%');" onmouseout="clearInterval(intrvl);$('.arrows').css('opacity','10%');">
+                <img class="arrows down" style="vertical-align: top;" src="{% static 'images/down.png' %}">
+            </td><td></td></tr>
+        </table>
+    </div>
+
+    <div id="availability_info" style="position:fixed;font-size:small;display:none;">
+    </div>
+
+
+{% endblock %}

@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'bootstrap/css/bootstrap.min.css' %}" >
+    <script type="text/javascript" src="{% static 'js/jquery-3.4.1.min.js' %}" type="javascript"></script>
+    <script type="text/javascript" src="{% static 'popper-core-master/src/popper.js' %}" type="javascript"></script>
+    <script type="text/javascript" src="{% static 'bootstrap/js/bootstrap.bundle.js' %}" type="javascript"></script>
+
+    <link rel="stylesheet" type="text/css" href="{% static 'DataTables/datatables.min.css' %}" >
+    <script type="text/javascript" src="{% static 'DataTables/datatables.js' %}" type="javascript"></script>
+
+
+    <link rel="stylesheet" type="text/css" href="{% static 'bootstrap/css/bootstrap-select.css' %}" >
+    <script type="text/javascript" src="{% static 'bootstrap/js/bootstrap-select.min.js' %}" type="javascript"></script>
+
+    <style>
+
+        /* Style the header */
+        .headernav {
+          padding: 10px 16px;
+          background: Green;
+          color: #f1f1f1;
+          z-index: 100;
+        }
+
+        .headernav a {
+          color:white;
+        }
+
+        .headernavblue {
+          padding: 10px 16px;
+          background: Blue;
+          color: #f1f1f1;
+          z-index: 100;
+        }
+
+        .headernavblue a {
+          color:white;
+        }
+
+        /* Page content */
+        .contentnav {
+          padding: 16px;
+        }
+
+        /* The sticky class is added to the header with JS when it reaches its scroll position */
+        .sticky {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          z-index:99;
+        }
+
+        .sticky2 {
+          position: fixed;
+          top: 0;
+          left: 0;
+          z-index:99;
+          width: 100%;
+          display:none;
+        }
+
+        /* Add some top padding to the page content to prevent sudden quick movement (as the header gets a new position at the top of the page (position:fixed and top:0) */
+        .sticky + .contentnav {
+          padding-top: 102px;
+        }
+
+        .table-fixed thead {
+          width: 97%;
+        }
+        .table-fixed tbody {
+          height: 230px;
+          overflow-y: auto;
+          overflow-x: auto;
+          width: 100%;
+        }
+        .table-fixed thead, .table-fixed tbody, .table-fixed tr, .table-fixed td, .table-fixed th {
+          display: block;
+        }
+        .table-fixed tbody td, .table-fixed thead > tr> th {
+          float: left;
+          border-bottom-width: 0;
+        }
+
+        .rfstables {
+            border-collapse: collapse;
+
+        }
+
+        .rfstables td  {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        .greenbuttons {
+
+        background-color: #4CAF50; /* Green */
+        color: white;
+      }
+
+      .greenbuttons:hover {
+       transition-duration: 0.2s;
+       background-color: blue;
+      }
+
+      [data-letters]:before {
+      content:attr(data-letters);
+      display:inline-block;
+      font-size:1.5em;
+      width:2.5em;
+      height:2.5em;
+      line-height:2.5em;
+      text-align:center;
+      border-radius:50%;
+      background:green;
+      vertical-align:middle;
+      margin-right:1em;
+      color:white;
+      }
+    </style>
+
+    <style>
+      .rbstable {
+        font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+        border-collapse: collapse;
+        width: 100%;
+      }
+
+      .rbstable td, .rbstable th {
+        border: 1px solid #ddd;
+        padding: 8px;
+      }
+
+      .rbstable tr:nth-child(even){background-color: #f2f2f2;}
+      .rbstable tr:nth-child(odd){background-color: white;}
+
+      .rbstable tr:hover {background-color: #ddd;}
+
+      .rbstable th {
+        padding-top: 12px;
+        padding-bottom: 12px;
+        text-align: left;
+        background-color: #4CAF50;
+        color: white;
+      }
+      </style>
+
+    <style>
+        .audit {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            display: none;
+            border: 5px solid;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+
+    <title>QAgile - Agility in Quality</title>
+  </head>
+  <body>
+  <div id="loginout" style="position:fixed;top:30;right:0;z-index:199;margin-right:30px;margin-top:2px;backgorund-color:white;">
+    {% if user.is_authenticated %}
+    <a href="/profile/"><p title="{{ user.first_name }} {{ user.last_name }}" data-letters="{{ user.first_name|slice:'0:1' }}{{ user.last_name|slice:'0:1' }}"></p></a>.
+
+    {% else %}
+        <a href="/identity/"><img src="{% static 'images/login.png' %}" height="35px;" width="40px"></a>
+    {% endif %}
+
+  </div>
+  <div style="display:none" id="busyimg"><img src="{% static 'images/busy.gif' %}" width="25px" height="25px" class="busygif" style=""  ></div>
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-8">
+          <h1 class="mt-2 text-center"><a href="/"><img src="{% static 'images/qagile-logo.png' %}"></a></h1>
+          <hr class="mt-0 mb-4">
+
+        </div>
+      </div>
+      {% block content %}
+      {% endblock %}
+    </div>
+    <div style="width:100%;margin:0 auto;text-align:center;font-size:small;color:grey"><a href="/about/" style="font-size:small;color:grey"> About </a> <a href="/contact/" style="font-size:small;color:grey">Contact</a> &#169; 2022</div>
+    <div id="global_alert" style="display:none;position:fixed;top:0;left:50%;transform: translate(-50%, 0%);background-color:yellow; z-index:9999; border:2px solid black;padding-left:5px;padding-right:5px">
+    </div>
+    <script>
+      var header;
+      var sticky;
+      $(document).ready(function() {
+        // When the user scrolls the page, execute myFunction
+        window.onscroll = function() {myFunction()};
+
+        // Add the sticky class to the header when you reach its scroll position. Remove "sticky" when you leave the scroll position
+        function myFunction() {
+
+            var header = document.getElementById("myHeader");
+            if(document.getElementById("myHeader")){
+                // Get the offset position of the navbar
+              sticky = header.offsetTop;
+              if (window.pageYOffset > sticky) {
+                header.classList.add("sticky");
+              } else {
+                header.classList.remove("sticky");
+              }
+            }
+        }
+
+        $( "input[type='number']" ).keydown(function(event) {
+          // Prevent shift key since its not needed
+          if (event.shiftKey == true) {
+              event.preventDefault();
+          }
+          // Allow Only: keyboard 0-9, numpad 0-9, backspace, tab, left arrow, right arrow, delete
+          if ((event.keyCode >= 48 && event.keyCode <= 57) || (event.keyCode >= 96 && event.keyCode <= 105) || event.keyCode == 8 || event.keyCode == 9 || event.keyCode == 37 || event.keyCode == 39 || event.keyCode == 46) {
+              // Allow normal operation
+          } else {
+              // Prevent the rest
+              event.preventDefault();
+          }
+        });
+
+
+
+        $(".busygif").fadeIn(400,doFadeOut);
+
+     } );
+
+      function doFadeIn(){
+          $(".busygif").fadeIn(400,doFadeOut);
+        }
+
+        function doFadeOut(){
+          $(".busygif").fadeOut(400,doFadeIn)
+        }
+
+        function global_alert(message, speed=2000, bgcolor="yellow", textcolor="black"){
+          $("#global_alert").prop("innerHTML", message);
+          $("#global_alert").css({"background-color": bgcolor, "color": textcolor});
+          $("#global_alert").fadeIn("slow", function(){
+              $("#global_alert").fadeOut(speed, function(){
+                $("#global_alert").prop("innerHTML", "");
+              });
+          });
+        }
+
+     </script>
+
+
+
+  </body>
+</html>

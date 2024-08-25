@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load static%}
+{% block content %}
+
+<table border="1" width="100%" style="text-align:center" cellspacing="30px" cellpadding="15px">
+    <tr>
+        <th>Bruce's Message</th>
+        <th>Sreeman's Message</th>
+    </tr>
+
+        {% if user.username == '1332911' or user.username == 'vn05438' %}
+        <form name="msg" action="." method="post">
+            {% csrf_token %}
+            <tr>
+            <td height="30px">
+               <textarea rows="5" cols="50" name="bruce">{{messages_data.bruce}}</textarea>
+            </td>
+            <td height="30px">
+                <textarea rows="5" cols="50" name="sreeman">{{messages_data.sreeman}}</textarea>
+            </td>
+            </tr>
+            <tr>
+            <td colspan="2"><button type="submit">Submit</button></td>
+            </tr>
+        </form>
+        {% else %}
+            <tr>
+                <td colspan="2">Only Bruce or Sreeman can edit this page</td>
+            </tr>
+        {% endif %}
+
+
+
+</table>
+
+{% endblock %}

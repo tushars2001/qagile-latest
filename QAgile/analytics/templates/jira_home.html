@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+{% block content %}
+    {% if request.GET.error %}
+        <p>{{request.GET.error}}</p>
+    {% endif %}
+
+<script>
+    function get_job_details(runid){
+        $.ajax({
+            url: "/analytics/jira/job-details/",
+            type: "post", //send it through get method
+            data: {'runid': runid},
+            headers: {'X-CSRFToken': '{{csrf_token}}'},
+            success: function(response) {
+                console.log(response);
+                var tbl = document.getElementById('job_details_tbl_body');
+                $('#job_details_tbl').DataTable().destroy();
+                document.getElementById('job_details_tbl_body').innerHTML = '';
+                document.getElementById('job_detail_head').innerHTML = 'Job Details for RunID: ' + response[0].runid + ' Load Type: ' + response[0].load_type;
+
+                for (i=0; i < response.length; i++){
+                    var rec = response[i];
+                    var row = tbl.insertRow()
+                    row.insertCell(0).innerHTML = rec.project_id;
+                    row.insertCell(1).innerHTML = rec.start_time == null ? '': rec.start_time.replace('T', ' ');
+                    row.insertCell(2).innerHTML = rec.end_time == null ? '' : rec.end_time.replace('T', ' ');
+                    row.insertCell(3).innerHTML = rec.duration;
+                    row.insertCell(4).innerHTML = rec.load_status;
+                    row.insertCell(5).innerHTML = rec.records_expected;
+                    row.insertCell(6).innerHTML = rec.records_processed;
+                }
+                $("#job_details_div").css({"width": "80%", "max-height": "80%"});
+                $('#job_details_tbl').DataTable({
+                    paging: true,
+                    order: [[1, 'desc']],
+                    columns: [
+                        { data: 'project_id' },
+                        { data: 'start_time' },
+                        { data: 'end_time' },
+                        { data: 'duration' },
+                        { data: 'load_status' },
+                        { data: 'records_expected' },
+                        { data: 'records_processed' }
+                    ]
+                });
+                $("#job_details_div").show();
+            },
+            error: function(response) {
+                console.log(response);
+            }
+        });
+    }
+    var timer;
+    function running_jobs(){
+        $.ajax({
+            url: "/analytics/jira/running-jobs/",
+            type: "post", //send it through get method
+            data: {'runid': runid},
+            headers: {'X-CSRFToken': '{{csrf_token}}'},
+            success: function(response) {
+                console.log(response);
+                var tbl = document.getElementById('job_details_tbl_body');
+                document.getElementById('job_details_tbl_body').innerHTML = '';
+                document.getElementById('job_detail_head').innerHTML = 'Job Details for RunID: ' + response[0].runid + ' Load Type: ' + response[0].load_type;
+                $('#job_details_tbl').DataTable().destroy();
+                for (i=0; i < response.length; i++){
+                    var rec = response[i];
+                    var row = tbl.insertRow()
+                    row.insertCell(0).innerHTML = rec.project_id;
+                    row.insertCell(1).innerHTML = rec.start_time == null ? '': rec.start_time.replace('T', ' ');
+                    row.insertCell(2).innerHTML = rec.end_time == null ? '' : rec.end_time.replace('T', ' ');
+                    row.insertCell(3).innerHTML = rec.duration;
+                    row.insertCell(4).innerHTML = rec.load_status;
+                    row.insertCell(5).innerHTML = rec.records_expected;
+                    row.insertCell(6).innerHTML = rec.records_processed;
+                }
+                $("#job_details_div").css({"width": "80%", "max-height": "80%"});
+                $('#job_details_tbl').DataTable({
+                    paging: true,
+                    order: [[1, 'desc']],
+                    columns: [
+                        { data: 'project_id' },
+                        { data: 'start_time' },
+                        { data: 'end_time' },
+                        { data: 'duration' },
+                        { data: 'load_status' },
+                        { data: 'records_expected' },
+                        { data: 'records_processed' }
+                    ]
+                });
+                $("#job_details_div").show();
+            },
+            error: function(response) {
+                console.log(response);
+            }
+        });
+    }
+</script>
+
+<h3 >
+    <a style="text-decoration: none;color:black; text-decoration: underline;" href="/analytics/jira/">Job View</a>
+    <span style="font-size:small; cursor:pointer;{% if not filter %} text-decoration: underline; {% endif %}" onclick="window.location='./'">All Jobs</span>
+    <span style="font-size:small; cursor:pointer;{% if filter %} text-decoration: underline; {% endif %}" onclick="window.location='./?filter=running'">Running Jobs</span>
+    <a style="text-decoration: none;color:black" href="/analytics/jira/projects/">Project View</a>
+</h3>
+<table class="rbstable" id="job_view_tbl">
+        <thead>
+        <tr>
+            <th>Method</th>
+            <th>Run ID</th>
+            <th>Status</th>
+            <th nowrap>Start Time</th>
+            <th nowrap>End Time</th>
+            <th>Duration</th>
+            <th nowrap>Rec Expected</th>
+            <th nowrap>Rec Processed</th>
+            <th nowrap>Log Steps</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for rec in jira_jobs %}
+            <tr onclick="get_job_details('{{rec.runid}}')" style="cursor:pointer">
+            <td>{{rec.method}}</td>
+            <td>{{rec.runid}}</td>
+            <td>{{rec.load_status}}</td>
+            <td>{{rec.start_time|date:'Y-m-d G:i:s'}}</td>
+            <td>{{rec.end_time|date:'Y-m-d G:i:s'}}</td>
+            <td>{{rec.duration|date:'G:i:s'}}</td>
+            <td>{{rec.records_expected}}</td>
+            <td>{{rec.records_processed}}</td>
+            <td>{{rec.log_steps}}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+</table>
+
+<div id="job_details_div" class="audit">
+    <table width="100%" class="rbstable">
+        <tr>
+            <th width="95%" style="text-align:center" id="job_detail_head"></th>
+            <th style="text-align:right"><span style="color:black; cursor:pointer;" onclick="$('#job_details_div').hide()"> X </span></th>
+        </tr>
+    </table>
+    <table class="rbstable" id="job_details_tbl">
+        <thead>
+            <tr>
+                <th>
+                    Project
+                </th>
+                <th>
+                    Start Time
+                </th>
+                <th>
+                    End Time
+                </th>
+                <th>
+                    Duration Time
+                </th>
+                <th>
+                    Status
+                </th>
+                <th>
+                    Records Expected
+                </th>
+                <th>
+                    Records Processed
+                </th>
+            </tr>
+        </thead>
+        <tbody id="job_details_tbl_body">
+        </tbody>
+    </table>
+</div>
+
+<script>
+
+    $(document).ready(function(){
+        var tbl = $('#job_view_tbl').DataTable({
+                paging: true,
+                order: [[1, 'desc']]
+                {% if filter %}
+                ,"language": {
+                  "emptyTable": "No Running Jobs"
+                }
+                {% endif %}
+            });
+            {% if filter %}
+                {% if jira_jobs %}
+                   setTimeout(function(){
+                        window.location = './?filter=running';
+                   }, 1500);
+                {% endif %}
+            {% endif %}
+
+    });
+
+</script>
+
+{% endblock %}

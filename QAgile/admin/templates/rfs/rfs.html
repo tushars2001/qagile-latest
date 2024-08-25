@@ -1,0 +1,230 @@
+{% extends 'base.html' %}
+{% block content %}
+
+    <div class="headernav" id="myHeader">
+        <div class="row text-center">
+            <span class="col-md-2"> <a href="#team"> Team </a></span>
+            <span class="col-md-2"> <a href="#domains"> Domains </a></span>
+            <span class="col-md-2"> <a href="#roles"> Roles </a></span>
+            <span class="col-md-2"> <a href="#locations"> Locations </a></span>
+            <span class="col-md-2"> <a href="#rates"> Rates </a></span>
+            <span class="col-md-2">  </span>
+        </div>
+    </div>
+    <br>
+    <h5 id="Manage Team Data">Manage Team Data</h5>
+
+    <div class="contentnav overflow-auto">
+        <table cellspacing="5" cellpadding="5"><tr><td><h3 id="team">Team</h3></td><td><h2><a href="./person/">+</a></h2></td></tr></table>
+        <table id="teamtable" class="display">
+            <thead>
+            <tr>
+                <th>VNID</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+
+                <th>Category</th>
+                <th>Rate</th>
+                <th>Role</th>
+                <th>Location</th>
+                <th>Email</th>
+                 <th>Phone</th>
+                <th>Domain</th>
+            </tr>
+            </thead>
+            <tbody>
+                {% for row in teamdata %}
+                    <tr>
+                        <td><a href="./person/?vnid={{row.vnid}}"  >{{row.vnid}}</a> </td>
+                        <td>{{row.first_name}}</td>
+                        <td>{{row.last_name}}</td>
+
+                        <td>{{row.category}}</td>
+                        <td>{{row.rate}}</td>
+                        <td>{{row.role}}</td>
+                        <td>{{row.city}}</td>
+                        <td>{{row.email}}</td>
+                        <td>{{row.phone}}</td>
+                        <td>
+                            {%if row.domain_name %}{{row.domain_name}}{% endif %}
+                        </td>
+                    </tr>
+                {% endfor   %}
+            </tbody>
+        </table>
+
+        <table cellspacing="5" cellpadding="5"><tr><td><h3 id="domains">Domains</h3></td><td><h2><a href="./domains/">+</a></h2></td></tr></table>
+        <table id="domaintable" class="display">
+            <thead>
+            <tr>
+                <th>Domain ID</th>
+                <th>Domain Name</th>
+                <th>Domain Lead</th>
+                <th>Domain Lead (Secondary)</th>
+                <th>Portfolio Manager</th>
+            </tr>
+            </thead>
+            <tbody>
+                {% for row in domains %}
+                    <tr>
+                        <td><a href="./domains/?domain_id={{row.domain_id}}">{{row.domain_id}}</a></td>
+                        <td>{%if row.domain_name %}{{row.domain_name}}{% endif %}</td>
+                        <td>{{row.dl_name}}</td>
+                        <td>{{row.dl_name_2}}</td>
+                        <td>{{row.pom_name}}</td>
+                    </tr>
+                {% endfor   %}
+            </tbody>
+        </table>
+
+        <table cellspacing="5" cellpadding="5"><tr><td><h3 id="roles">Roles</h3></td><td><h2><a href="./role/">+</a></h2></td></tr></table>
+        <table id="roletable" class="display">
+            <thead>
+            <tr>
+                <th>Role ID</th>
+                <th>Role</th>
+
+            </tr>
+            </thead>
+            <tbody>
+                {% for row in roles %}
+                    <tr>
+                        <td><a href="./role/?role_id={{row.role_id}}">{{row.role_id}}</a></td>
+                        <td>{%if row.role %}{{row.role}}{% endif %}</td>
+
+                    </tr>
+                {% endfor   %}
+            </tbody>
+        </table>
+
+        <table cellspacing="5" cellpadding="5"><tr><td><h3 id="locations">Locations</h3></td><td><h2><a href="./location/">+</a></h2></td></tr></table>
+        <table id="locationtable" class="display">
+            <thead>
+            <tr>
+                <th>Location ID</th>
+                <th>City</th>
+                <th>State</th>
+                <th>Country</th>
+
+            </tr>
+            </thead>
+            <tbody>
+                {% for row in locations %}
+                    <tr>
+                        <td><a href="./location/?location_id={{row.location_id}}">{{row.location_id}}</a></td>
+                        <td>{%if row.city %}{{row.city}}{% endif %}</td>
+                        <td>{{row.state}}</td>
+                        <td>{{row.country}}</td>
+
+                    </tr>
+                {% endfor   %}
+            </tbody>
+        </table>
+
+        <table cellspacing="5" cellpadding="5"><tr><td><h3 id="rates">Rates</h3></td><td><h2><a href="./rate/">+</a></h2></td></tr></table>
+        <table id="ratestable" class="display">
+            <thead>
+            <tr>
+                <th>Rate ID</th>
+                <th>Rate</th>
+                <th>Category</th>
+            </tr>
+            </thead>
+            <tbody>
+                {% for row in rates %}
+                    <tr>
+                        <td><a href="./rate/?rate_id={{row.rate_id}}">{{row.rate_id}}</a></td>
+                        <td>{%if row.rate %}${{row.rate}}{% endif %}</td>
+                        <td>{{row.category}}</td>
+                    </tr>
+                {% endfor   %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="sticky2" onclick='$(".DTED_Lightbox_Wrapper").hide();$(".sticky2").hide();'>
+        X
+    </div>
+
+
+
+    <!--- Datatable script--->
+    <script>
+        $(document).ready(function() {
+            $('#teamtable').DataTable({
+                paging: false,
+                scrollY: 400,
+                fixedHeader: false,
+                "sScrollX": "100%",
+                "bScrollCollapse": true,
+                order: [[1, 'asc']],
+
+                columns: [
+                    { data: 'VNID' },
+                    { data: 'first_name' },
+                    { data: 'last_name' },
+                    { data: 'category' },
+                    { data: 'rate' },
+                    { data: 'role' },
+                    { data: 'location' },
+                    { data: 'email' },
+                    { data: 'phone' },
+                    { data: 'domain_name' }
+                ]
+            });
+
+        } );
+
+        $(document).ready(function() {
+            $('#domaintable').DataTable({
+                paging: false,
+                scrollY: 300,
+                fixedHeader: false,
+                order: [[0, 'asc']]
+            });
+
+        } );
+
+        $(document).ready(function() {
+            $('#roletable').DataTable({
+                paging: false,
+                scrollY: 300,
+                fixedHeader: false,
+                order: [[0, 'asc']]
+            });
+
+        } );
+
+        $(document).ready(function() {
+            $('#locationtable').DataTable({
+                paging: false,
+                scrollY: 300,
+                fixedHeader: false,
+                order: [[0, 'asc']]
+            });
+
+        } );
+
+        $(document).ready(function() {
+            $('#ratestable').DataTable({
+                paging: false,
+                scrollY: 300,
+                fixedHeader: false,
+                order: [[0, 'asc']],
+                columns: [
+                    { data: 'rate_id' },
+                    { data: 'rate' },
+                    { data: 'category' }
+                ]
+            });
+
+        } );
+    </script>
+
+
+    <!-- MDB --->
+    <script type="text/javascript">
+
+
+    </script>
+{% endblock %}

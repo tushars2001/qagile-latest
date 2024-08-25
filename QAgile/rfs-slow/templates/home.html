@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div>
+    <div> <a href="./request-for-service">+ Create New Request for Service </a> </div>
+    <table id="rfstable" class="display">
+        <thead>
+        <tr>
+            <th>RFS ID</th>
+            <th>X</th>
+            <th>Project Id</th>
+            <th>Project Name</th>
+            <th>Status</th>
+            <th>last_updated</th>
+            <th>Requester</th>
+            <th>Portfolio Manager</th>
+            <th>QA CoE Lead</th>
+        </tr>
+        </thead>
+        <tbody>
+            {% for row in rfsdata %}
+                <tr>
+                    <td nowrap>
+                        <form name="rfsform_{{row.project_id}}" method="post" action="./request-for-service/">
+                            {% csrf_token %}
+                            <input type="hidden" name="rfs_request_id" value="{{row.link}}">
+                            <input type="hidden" name="via_view" value="via_view">
+                            <button class="greenbuttons" type="submit">RFS-{{row.rfs_request_id}}</button>
+                        </form>
+                    </td>
+                    <td nowrap>
+                        <form name="del_rfsform_{{row.project_id}}" method="post" action="./">
+                            {% csrf_token %}
+                            <input type="hidden" name="rfs_request_id" value="{{row.link}}">
+                            <input type="hidden" name="delete" value="delete">
+                            <button class="greenbuttons" type="submit" onclick="return confirm('Are you sure you want to delete {{row.project_id}}');">X</button>
+                        </form>
+                    </td>
+                    <td>{{row.project_id}}</td>
+                    <td>{{row.project_name}}</td>
+                    <td>{{row.rfs_status}}</td>
+                    <td>{{row.last_updated|date:"SHORT_DATE_FORMAT"}}</td>
+                    <td>{{row.requester_name}} ({{row.requester_role}})</td>
+                    <td>{{row.pom_name}}</td>
+                    <td>{{row.qa_coe_lead_name}}</td>
+                </tr>
+            {% endfor   %}
+        </tbody>
+    </table>
+
+</div>
+
+<script>
+
+    $(document).ready(function() {
+            $('#rfstable').DataTable({
+                paging: false,
+                scrollY: 300,
+                fixedHeader: false,
+                order: [[0, 'desc']]
+            });
+
+        } );
+
+</script>
+
+{% endblock %}

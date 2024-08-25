@@ -1,0 +1,224 @@
+{% extends 'base.html' %}
+{% block content %}
+
+    <div class="headernav" id="myHeader">
+        <div class="row text-center">
+            <span class="col-md-2"> <a href="#team"> Team </a></span>
+            <span class="col-md-2"> <a href="#domains"> Domains </a></span>
+            <span class="col-md-2"> <a href="#roles"> Roles </a></span>
+            <span class="col-md-2"> <a href="#locations"> Locations </a></span>
+            <span class="col-md-2"> <a href="#rates"> Rates </a></span>
+            <span class="col-md-2">  </span>
+        </div>
+    </div>
+
+    <div class="contentnav overflow-auto">
+        <table cellspacing="5" cellpadding="5"><tr><td><h3 id="team">QA CoE Team</h3></td><td><a href="../">Back</a></td></tr></table>
+        <form name="personform" method="post" action="./">
+            {% csrf_token %}
+        <table id="persontable" class="display">
+            <tbody>
+                {% for row in persondata %}
+                    <tr>
+                        <td>VNID</td><td><input type="text" name="vnid" value="{{row.vnid}}" maxlength="7"></td>
+                    </tr>
+                    <tr>
+                        <td>First Name</td><td><input type="text" name="first_name" value="{{row.first_name}}" maxlength="45"></td>
+                    </tr>
+                    <tr>
+                        <td>Last Name</td><td><input type="text" name="last_name" value="{{row.last_name}}" maxlength="45"></td>
+                    </tr>
+                    <tr>
+                        <td>Domain</td><td>
+                            <select name="domain" class="selectpicker" multiple data-live-search="true">
+                                {% for row_d in domains %}
+                                    <option value="{{row_d.domain_id}}">{{row_d.domain_name}}</option>
+                                {% endfor   %}
+                            </select>
+                    </td>
+                    </tr>
+                    <tr>
+                        <td>Category</td><td>
+                        <select name="category">
+                            <option value="">Un-assign</option>
+                            <option value="Core" {% if row.category == "Core" %} selected {% endif %}>Core</option>
+                            <option value="Flex" {% if row.category == "Flex" %} selected {% endif %}>Flex</option>
+                        </select>
+                    </td>
+                    </tr>
+                    <tr>
+                        <td>Rate</td><td>
+                        <select name="rate">
+                            <option value="">Un-assign</option>
+                            {% for row_d in rates %}
+                                <option value="{{row_d.rate_id}}" {% if row_d.rate_id == row.rate_id %} selected {% endif %}>{{row_d.category}} - {{row_d.rate}}</option>
+                            {% endfor   %}
+                        </select>
+                    </td>
+                    </tr>
+                    <tr>
+                        <td>Role</td><td>
+                        <select name="role">
+                            <option value="">Un-assign</option>
+                            {% for row_d in roles %}
+                                <option value="{{row_d.role_id}}" {% if row_d.role_id == row.role_id %} selected {% endif %}>{{row_d.role_id}} - {{row_d.role}}</option>
+                            {% endfor   %}
+                        </select>
+                    </td>
+                    </tr>
+                    <tr>
+                        <td>City</td><td>
+                        <select name="location">
+                            <option value="">Un-assign</option>
+                            {% for row_d in locations %}
+                                <option value="{{row_d.location_id}}" {% if row_d.location_id == row.location_id %} selected {% endif %}>{{row_d.location_id}} - {{row_d.city}}</option>
+                            {% endfor   %}
+                        </select>
+                    </td>
+                    </tr>
+                    <tr>
+                        <td>Email</td><td><input type="text" name="email" value="{{row.email}}" maxlength="45"></td>
+                    </tr>
+                    <tr>
+                        <td>Phone</td><td><input type="text" name="phone" value="{{row.phone}}" maxlength="45"></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <button type="submit">Save</button>
+                            {% if row.vnid != "" %}
+                                <button type="button">Delete</button>
+                            {% endif %}
+                        </td>
+
+                    </tr>
+                 {% endfor   %}
+            </tbody>
+        </table>
+        </form>
+        <!--
+        <h3 id="domains"> QA CoE Domains</h3>
+        <table id="domaintable" class="display">
+            <thead>
+            <tr>
+                <th>Domain ID</th>
+                <th>Domain Name</th>
+                <th>Domain Lead</th>
+                <th>Domain Lead (Secondary)</th>
+                <th>Portfolio Manager</th>
+            </tr>
+            </thead>
+            <tbody>
+                {% for row in domains %}
+                    <tr>
+                        <td>{{row.domain_id}}</td>
+                        <td>{%if row.domain_name %}{{row.domain_name}}{% endif %}</td>
+                        <td>{{row.domain_lead}}</td>
+                        <td>{{row.domain_lead_two}}</td>
+                        <td>{{row.pom}}</td>
+                    </tr>
+                {% endfor   %}
+            </tbody>
+        </table>
+
+        <h3 id="roles">QA CoE Roles</h3>
+        <table id="roletable" class="display">
+            <thead>
+            <tr>
+                <th>Role ID</th>
+                <th>Role</th>
+                <th>Role Code</th>
+            </tr>
+            </thead>
+            <tbody>
+                {% for row in roles %}
+                    <tr>
+                        <td>{{row.role_id}}</td>
+                        <td>{%if row.role %}{{row.role}}{% endif %}</td>
+                        <td>{{row.role_id}}</td>
+                    </tr>
+                {% endfor   %}
+            </tbody>
+        </table>
+
+        <h3 id="locations">QA CoE Locations</h3>
+        <table id="locationtable" class="display">
+            <thead>
+            <tr>
+                <th>Location ID</th>
+                <th>City</th>
+                <th>State</th>
+                <th>Country</th>
+                <th>Location Code</th>
+            </tr>
+            </thead>
+            <tbody>
+                {% for row in locations %}
+                    <tr>
+                        <td>{{row.location_id}}</td>
+                        <td>{%if row.city %}{{row.city}}{% endif %}</td>
+                        <td>{{row.state}}</td>
+                        <td>{{row.country}}</td>
+                        <td>{{row.location_id}}</td>
+                    </tr>
+                {% endfor   %}
+            </tbody>
+        </table>
+
+        <h3 id="rates">QA CoE Rates</h3>
+        <table id="ratestable" class="display">
+            <thead>
+            <tr>
+                <th>Rate ID</th>
+                <th>Rate</th>
+                <th>Category</th>
+            </tr>
+            </thead>
+            <tbody>
+                {% for row in rates %}
+                    <tr>
+                        <td>{{row.rate_id}}</td>
+                        <td>{%if row.rate %}${{row.rate}}{% endif %}</td>
+                        <td>{{row.category}}</td>
+                    </tr>
+                {% endfor   %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="sticky2" onclick='$(".DTED_Lightbox_Wrapper").hide();$(".sticky2").hide();'>
+        X
+    </div> -->
+
+    <!--- Datatable script--->
+    <script>
+        $(document).ready(function() {
+            $('.select').selectpicker();
+
+             {% for row in persondata %}
+                {% if row.domain_id != None %}
+                    $('.selectpicker').selectpicker('val', [{{row.domain_id}}]);
+                {% endif %}
+             {% endfor %}
+
+            $('#persontable').DataTable({
+
+            });
+
+
+
+
+
+        } );
+
+
+
+
+    </script>
+
+
+    <!-- MDB --->
+    <script type="text/javascript">
+
+
+    </script>
+{% endblock %}

@@ -1,0 +1,1 @@
+curl -uri "http://127.0.0.1/test_data_v2/jira/test_cases/?method=jira_load_tcs_for_all_projects&load=D"

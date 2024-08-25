@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load static%}
+{% block content %}
+
+<table border="1" width="100%" style="text-align:center" cellspacing="30px" cellpadding="15px">
+
+    <tr>
+        <td height="30px">
+            <h1>RBS QA CoE Initiative</h1>
+        </td>
+    </tr>
+    <tr>
+        <td height="30px">
+            <p>Concept & System Design, Development: Tushar Saxena</p>
+            <p>Emails: tushar.saxena@in.ibm.com , tushar.saxena@delhaize.com</p>
+            <p>Ph: +1-318-680-1012</p>
+            <p>Please send email to report any bug, feature suggestions or comments</p>
+            <div>
+                <form method="post" action=".">
+                    {% csrf_token %}
+                    <textarea name="sendmail" to="sendmail" rows="10" cols="50"></textarea>
+                    <button type="submit" name="Send" value="Send">Send</button>
+                </form>
+            </div>
+        </td>
+    </tr>
+
+
+</table>
+
+{% endblock %}

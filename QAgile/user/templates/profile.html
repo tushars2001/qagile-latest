@@ -1,0 +1,537 @@
+{% extends 'base.html' %}
+{% load static%}
+{% block content %}
+<link rel="stylesheet" type="text/css" href="{% static 'js/Chart.js/Chart.css' %}" >
+<script type="text/javascript" src="{% static 'js/Chart.js/Chart.js' %}" type="javascript"></script>
+<script>
+    $(document).ready(function(){
+        //$('input').prop('disabled', true);
+        {% for week in my_capacity %}
+            $($("[name='week_{{week.week}}']")[0]).val("{{week.hrs}}");
+            $($("[name='notes_{{week.week}}']")[0]).val("{{week.notes|default_if_none:''}}");
+            {% if week.notes %}
+                $("#pencil_{{week.week}}").css({'font-weight': 'bold', 'color':'red'});
+            {% endif %}
+        {% endfor %}
+
+        $("#enddate").prop("min", (new Date()).toISOString().slice(0, 10));
+        $("#enddate").prop("max", new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10));
+
+    });
+
+    function sp(ob_name,clicked){
+        var ob = $("[name='" + ob_name + "']");
+        var val_to_copy = $(ob).val();
+
+        if($(".capacity_hrs").prop("disabled")){
+            return;
+        }
+
+        if(clicked == 'R'){
+            var row_objs = $( "input[name^='week_']");
+            var clicked_dtstamp = $($($(".rbstable")[0]).children().children()[0]).children()[$(ob).parent().parent()[0].cellIndex].innerHTML.trim();
+            var clicked_idx = $(ob).parent().parent()[0].cellIndex;
+            $(row_objs).each(function(idx,v){
+                thisdt_stamp = $($($(".rbstable")[0]).children().children()[0]).children()[idx].innerHTML.trim();
+                this_index = idx;
+                if(this_index > clicked_idx){
+                    $(v).val(val_to_copy);
+                }
+            });
+        }
+        if(clicked == 'L'){
+             var row_objs = $( "input[name^='week_']");
+            var clicked_dtstamp = $($($(".rbstable")[0]).children().children()[0]).children()[$(ob).parent().parent()[0].cellIndex].innerHTML.trim();
+            var clicked_idx = $(ob).parent().parent()[0].cellIndex;
+            $(row_objs).each(function(idx,v){
+                thisdt_stamp = $($($(".rbstable")[0]).children().children()[0]).children()[idx].innerHTML.trim();
+                this_index = idx;
+                if(this_index < clicked_idx){
+                    $(v).val(val_to_copy);
+                }
+            });
+        }
+    }
+
+    function toggle_lock(){
+        if($(".capacity_hrs").prop("disabled")){
+            document.getElementById('lock_unlock').innerHTML = '&#128274;';
+        }
+        else{
+            document.getElementById('lock_unlock').innerHTML = '&#128275;';
+        }
+    }
+
+    function validate_delegation(){
+        if($("#personselect").val().length && $("#enddate").val().length){
+            $("#delegation_form").submit();
+        }
+        else{
+            alert("PoM and Date is required");
+            return false;
+        }
+    }
+
+    function remove_delegation(){
+        $("#personselect").val('');
+        $("#delegation_form").submit();
+    }
+</script>
+<style>
+    .sections {
+        border-bottom: 2px solid black;
+        width:100%;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        padding-right: 5px;
+        padding-left: 5px;
+        box-sizing: border-box;
+    }
+    .gap {
+        height: 50px;
+    }
+    p {
+        font-weight: bold;
+    }
+</style>
+{% if message %}
+    <span style="width:100%; text-align:center; background-color:yellow">{{message}}</span>
+{% endif %}
+<p>{{ user.first_name }} {{ user.last_name }} <span style="font-size:small;vertical-align: middle;"><a href="/identity/logout/"><img src="{% static 'images/logout.png' %}"></a></span></p>
+<div class="sections">
+    <p>My Capacity</p>
+    <span id="span_edit"  onclick="$('.capacity_hrs').prop('disabled', (i, v) => !v); toggle_lock();" style="cursor:pointer; font-size:large">
+        <span id="lock_unlock">&#128274;</span>
+    </span>
+    <div style="max-width:100%;overflow: auto;">
+        <form name="f_capacity" action="/profile/capacity/" method="post">
+            {% csrf_token %}
+            <table class="rbstable">
+                <tr>
+                {% for week in weeks %}
+                    <th style="font-size:small" nowrap> {{week}}</th>
+                {% endfor %}
+                </tr>
+                <tr>
+                {% for week in weeks %}
+                    <td>
+                        <div style="font-size:x-small"><span style="cursor:pointer" onclick="sp('week_{{week}}', 'L');">L </span> <span style="cursor:pointer" onclick="sp('week_{{week}}', 'R');"> R </span></div>
+                        <div style="width:5.5em">
+                            <input disabled class="capacity_hrs" type="number" min="0" style="width: 4em;" name="week_{{week}}">
+                            <span onclick="$('#notes_{{week}}').toggle();" id="pencil_{{week}}" style="cursor:pointer">&#9998;</span>
+                        </div>
+                        <div style="display:none;" id="notes_{{week}}"><input disabled class="capacity_hrs" type="text" style="width: 10em;" name="notes_{{week}}"> </div>
+                    </td>
+                {% endfor %}
+                </tr>
+                <tr>
+                    <td colspan="{{weeks|length}}">
+                        <input class="greenbuttons capacity_hrs" type="submit" value="Submit" disabled>
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+</div>
+
+
+<div class="gap"></div>
+<div class="sections">
+    {% if userdata.0.role == 'Portfolio Manager' %}
+        <p>My RFS-Approval Queue</p>
+    {% else %}
+        <p>My Domain's RFSs</p>
+    {% endif %}
+
+    <div>
+        <table id="rfstable" class="display">
+            <thead>
+            <tr>
+                <th nowrap>RFS ID</th>
+                <th nowrap>Project Id</th>
+                <th nowrap>Project Name</th>
+                <th nowrap>Status</th>
+                <th nowrap>last_updated</th>
+                <th nowrap>Requester</th>
+                <th nowrap>Portfolio Manager</th>
+                <th nowrap>QA CoE Lead</th>
+            </tr>
+            </thead>
+            <tbody>
+                {% for row in rfsdata %}
+                    <tr>
+                        <td nowrap>
+                            <form name="rfsform_{{row.project_id}}" method="post" action="/rfs/request-for-service/">
+                                {% csrf_token %}
+                                <input type="hidden" name="rfs_request_id" value="{{row.link}}">
+                                <input type="hidden" name="via_view" value="via_view">
+                                <button class="greenbuttons" type="submit">
+                                    RFS-{{row.rfs_request_id}}
+                                </button>
+                            </form>
+                        </td>
+
+                        <td>{{row.project_id}}</td>
+                        <td>{{row.project_name}}</td>
+                        <td>{{row.rfs_status}}</td>
+                        <td>{{row.last_updated|date:"Y-m-d"}}</td>
+                        <td>{{row.requester_name}} ({{row.requester_role}})</td>
+                        <td>{{row.pom_name}}</td>
+                        <td>{{row.qa_coe_lead_name}}</td>
+                    </tr>
+                {% endfor   %}
+            </tbody>
+        </table>
+
+    </div>
+
+    <script>
+
+        $(document).ready(function() {
+                $('#rfstable').DataTable({
+                    paging: true,
+                    scrollY: 300,
+                    scrollX: true,
+                    scroller: true,
+                    order: [[0, 'desc']]
+
+                });
+
+                $('#this_week_tbl').DataTable({
+                    paging: true,
+                    scrollX: true,
+                    scroller: true,
+                    order: [[0, 'desc']]
+
+                });
+
+            } );
+
+    </script>
+</div>
+
+{% if userdata.0.role == 'Portfolio Manager' %}
+<div class="gap"></div>
+<div class="sections">
+    <p>Approval Delegation</p>
+    <form method="post" action="/profile/delegation/" id="delegation_form">
+        {% csrf_token %}
+        <table>
+            <tr>
+                <td>Select PoM:</td>
+                <td>
+                    <select id="personselect" name="vnid_delegate" class="selectpicker"  data-actions-box="true">
+                        <option value="" ></option>
+                        {% for row_d in poms %}
+                            {% if row_d.vnid != user.username %}
+                                <option value="{{row_d.vnid}}" {% if delegated.0.vnid_delegate == row_d.vnid %} selected {% endif %} >{{row_d.first_name}} {{row_d.last_name}}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </td>
+                <td>Authorized Up to:</td>
+                <td><input id="enddate" type="date" name="enddate" value="{{ delegated.0.enddate|date:'Y-m-d' }}"></td>
+                <td><button class="greenbuttons" onclick="return validate_delegation()">Delegate</button> </td>
+                {% if delegated %}
+                    <td><button class="greenbuttons" onclick="return remove_delegation()">Remove Authorization</button> </td>
+                {% endif %}
+            </tr>
+        </table>
+    </form>
+</div>
+{% endif %}
+
+<div class="gap"></div>
+<div class="sections">
+    <p>My Planned vs Actuals in last 6 weeks</p>
+    {% if chartdata %}
+        <button id='line' class="greenbuttons">Cumulative</button>
+        <button id='bar' class="greenbuttons">Per Week</button>
+        <canvas id="myChart" width="800" height="400"></canvas>
+        <br><br><br>
+        <div style="display:none">
+            <table class="rbstable">
+                <tr>
+                    <th>Week</th>
+                    <th>Planned</th>
+                    <th>Actual</th>
+                </tr>
+                {% for rec in chartdata.planned %}
+                <tr>
+                    <td>{{rec.weekstart|date:"SHORT_DATE_FORMAT"}}</td>
+                    <td>{{rec.hrs}}</td>
+                    <td>{{chartdata.actuals}}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <br>
+
+        <script>
+            var myChart;
+            $(document).ready(function(){
+                var lang = "en-US";
+                var d = new Date;
+                var year = d.getFullYear();
+                var month = d.getMonth();
+                var day = d.getDate();
+
+                function dateToTS (date) {
+                    return date.valueOf();
+                }
+
+                function tsToDate (ts) {
+                    var d = new Date(ts);
+
+                    return d.toLocaleDateString(lang, {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        weekday: 'long'
+                    });
+                }
+
+                {% if chartdata %}
+                    var planned_data = [];
+                    var actuals_data = [];
+                    var planned_data_c = [0];
+                    var actuals_data_c = [0];
+                    var x_axis = [];
+                    var hrs=0;
+                    {% for rec in chartdata.planned %}
+                        tmp = {
+                            'weekstart': '{{rec.weekstart}}',
+                            'hrs': '{{rec.hrs}}'
+                        }
+                        v = '{{rec.weekstart}}'.split(",");
+                        v.pop();
+                        v = v.join(",");
+                        x_axis.push(v);
+                        planned_data.push('{{rec.hrs}}');
+                        hrs = hrs + {{rec.hrs}};
+                        planned_data_c.push(hrs);
+
+                    {% endfor %}
+                    hrs=0;
+                    {% for rec in chartdata.actuals %}
+                        tmp = {
+                            'weekstart': '{{rec.weekstart}}',
+                            'hrs': '{{rec.hrs}}'
+                        }
+
+                        actuals_data.push('{{rec.hrs}}');
+                        hrs = hrs + {{rec.hrs}};
+                        actuals_data_c.push(hrs);
+
+                    {% endfor %}
+
+                    config = {
+                        type: 'bar',
+                        data: {
+                            labels: x_axis,
+                            datasets: [{
+                                label: 'Planned',
+                                data: planned_data,
+                                backgroundColor: "blue",
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Actuals',
+                                data: actuals_data,
+                                backgroundColor: "green",
+                                borderWidth: 1
+                            }
+                            ]
+                        },
+                        title: {
+                            display: true,
+                            text: 'IM13011 Customer MDM'
+                        },
+                        options: {
+                            scales: {
+                                yAxes: [{
+                                    ticks: {
+                                        beginAtZero: true
+                                    }
+                                }]
+                            }
+                        }
+                        }
+
+                        config_c = {
+                        type: 'line',
+                        data: {
+                            labels: x_axis,
+                            datasets: [{
+                                label: 'Planned',
+                                data: planned_data_c,
+                                borderColor: "blue",
+                                borderWidth: 5,
+                                fill: false
+                            },
+                            {
+                                label: 'Actuals',
+                                data: actuals_data_c,
+                                borderColor: "green",
+                                borderWidth: 5,
+                                fill: false
+                            }
+                            ]
+                        },
+                        title: {
+                            display: true,
+                            text: 'IM13011 Customer MDM'
+                        },
+                        options: {
+                            scales: {
+                                yAxes: [{
+                                    ticks: {
+                                        beginAtZero: true
+                                    }
+                                }]
+                            }
+                        }
+                        }
+
+                    var ctx = $('#myChart');
+                    myChart = new Chart(ctx, config);
+                    //window.scrollTo(0,document.body.scrollHeight);
+
+                {% endif %}
+
+
+                $("#line").click(function() {
+                  change('line');
+                });
+
+                $("#bar").click(function() {
+                  change('bar');
+                });
+
+                function change(newType) {
+                  var ctx = document.getElementById("myChart").getContext("2d");
+
+                  // Remove the old chart and all its event handles
+                  if (myChart) {
+                    myChart.destroy();
+                  }
+
+                  // Chart.js modifies the object you pass in. Pass a copy of the object so we can use the original object later
+                if(newType == 'line')
+                    var temp = jQuery.extend(true, {}, config_c);
+                else
+                    var temp = jQuery.extend(true, {}, config);
+                  temp.type = newType;
+                  myChart = new Chart(ctx, temp);
+                  //window.scrollTo(0,document.body.scrollHeight);
+                };
+
+                window.scrollTo(0,0);
+
+            });
+        </script>
+    {% endif %}
+</div>
+
+<div class="gap"></div>
+<div class="sections">
+    <p>My Planned Hrs. this week</p>
+    <table id="this_week_tbl" class="">
+        <thead>
+            <tr>
+                <th>Week</th>
+                <th>Project ID</th>
+                <th>Project</th>
+                <th>Hrs</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for record in this_week_data %}
+            <tr>
+                <td>{{record.week}}</td>
+                <td>{{record.project_id}}</td>
+                <td>{{record.project_name}}</td>
+                <td>{{record.hrs}}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="gap"></div>
+<div class="sections">
+    <p>Non closed Defects in my queue</p>
+</div>
+
+<div class="gap"></div>
+<div  class="sections">
+    <p>Work Assigned to me</p>
+</div>
+
+<div class="gap"></div>
+<div class="sections">
+    <table>
+        <form name="f_ch_pwd" action="./change-password/" method="post">
+        {% csrf_token %}
+        <tr>
+            <td>
+                Password:
+            </td>
+            <td>
+                <input type="text" size="30" name="password" placeholder="Change My Password" required minlength="5">
+            </td>
+            <td>
+                <input class="greenbuttons" type="submit" value="Change">
+            </td>
+        </tr>
+        </form>
+
+        <form name="f_ch_rbs_email" action="./change-email/" method="post">
+        {% csrf_token %}
+        <tr>
+            <td>
+                Email:
+            </td>
+            <td>
+                <input type="text" size="30" name="email" value="{{userdata.0.email}}" placeholder="Change My Email" required minlength="5">
+            </td>
+            <td>
+                <input class="greenbuttons" type="submit" value="Change">
+            </td>
+        </tr>
+        </form>
+        <!---
+        <form name="f_ch_ibm_email" action="./change-ibm-email/" method="post">
+        {% csrf_token %}
+        <tr>
+            <td>
+                IBM Email:
+            </td>
+            <td>
+                <input type="text" name="email" placeholder="Change My IBM Email" required minlength="5">
+            </td>
+            <td>
+                <input class="greenbuttons" type="submit" value="Change">
+            </td>
+        </tr>
+
+        </form>
+        --->
+
+        <form name="f_ch_ph" action="./change-phone/" method="post">
+        {% csrf_token %}
+        <tr>
+            <td>
+                Phone:
+            </td>
+            <td>
+                <input type="text" size="30" name="phone" value="{{userdata.0.phone}}" placeholder="Change My Ph Number" required minlength="10">
+            </td>
+            <td>
+                <input class="greenbuttons" type="submit" value="Change">
+            </td>
+        </tr>
+        </form>
+    </table>
+</div>
+{% endblock %}

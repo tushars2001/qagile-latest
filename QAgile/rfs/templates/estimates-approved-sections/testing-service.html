@@ -1,0 +1,74 @@
+            <div id="byts" >
+                <div class="card">
+                    <div class="card-header" style="background-color:rgba(227, 199, 88, 0.21)" id="btheading">
+                        <h5 class="mb-0">
+                        <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#btform" aria-expanded="false" aria-controls="btform">
+                          Testing Services
+                        </button>
+                        </h5>
+                    </div>
+
+                    <div id="btform" class="collapse show" aria-labelledby="btheading" data-parent="#byts">
+                        <div class="card-body">
+                            <table class="rbstable">
+                                <tr>
+                                    <th>Testing Services</th>
+                                    <th>Effort</th>
+                                    <th>Unit</th>
+                                    <th>Comments</th>
+                                </tr>
+                                <tr>
+                                    <td>Systems Integration Testing</td>
+                                    <td id="SIT_hrs"></td>
+                                    <td>Hours</td>
+                                    <td id="SIT_comments"></td>
+                                </tr>
+                                <tr>
+                                    <td>User Acceptance Testing</td>
+                                    <td id="UAT_hrs"><input type="number" name="UAT_hrs" onchange="update_totals()" min="0"></td>
+                                    <td>Hours</td>
+                                    <td id="UAT_comments"></td>
+                                </tr>
+                                 <tr>
+                                    <td>Performance Testing</td>
+                                    <td id="PERF_hrs"><input type="number" name="PERF_hrs" onchange="update_totals()" min="0"></td>
+                                    <td>Hours</td>
+                                    <td id="PERF_comments"></td>
+                                </tr>
+                                <tr>
+                                    <td>Security Testing</td>
+                                    <td id="SEC_hrs"><input type="number" name="SEC_hrs" onchange="update_totals()" min="0"></td>
+                                    <td>Hours</td>
+                                    <td id="SEC_comments"></td>
+                                </tr>
+                                <tr>
+                                    <td>Accessibility Testing</td>
+                                    <td id="ACC_hrs"><input type="number" name="ACC_hrs" onchange="update_totals()" min="0"></td>
+                                    <td>Hours</td>
+                                    <td id="ACC_comments"></td>
+                                </tr>
+                                <tr>
+                                    <td>Production Acceptance Testing</td>
+                                    <td id="PRDAT_hrs"><input type="number" name="PRDAT_hrs" onchange="update_totals()" min="0"></td>
+                                    <td>Hours</td>
+                                    <td id="PRDAT_comments"></td>
+                                </tr>
+                                <tr>
+                                    <td>QA Portfolio Manager Support</td>
+                                    <td id="POM_hrs"><input type="number" name="POM_hrs" onchange="update_totals()" min="0"></td>
+                                    <td>Hours</td>
+                                    <td id="POM_comments"></td>
+                                </tr>
+                                <tr>
+                                    <td>Total Testing Service</td>
+                                    <td ><span id="total_ts_cost"></span></td>
+                                    <td>Hours</td>
+                                    <td style="font-size:x-small">Hrs.from Resource Loading: {{rfs_total_rl.rfs_total_hrs}}<br>
+                                        <span id="hrs_match"></span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div> <!--- kt end --->

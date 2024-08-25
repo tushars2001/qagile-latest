@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+    {% if request.GET.error %}
+        <p>{{request.GET.error}}</p>
+    {% endif %}
+    <table class="rbstable">
+        <tr><td>Upload Resource File</td>
+            <td>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="file" name="myfile" required>
+                <button type="submit">Upload</button>
+            </form>
+        </td></tr>
+
+        {% if uploaded_file_url %}
+        <tr><td colspan="2">
+            <p>File uploaded</p>
+        </td></tr>
+        {% endif %}
+    </table>
+{% endblock %}

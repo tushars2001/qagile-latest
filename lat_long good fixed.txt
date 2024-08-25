@@ -1,0 +1,8 @@
+﻿New York   United States40.6943 -73.9249    faill2   
+Mexico CityMexico       19.4424 -99.131  190280003   
+Mumbai     India        19.017  72.857   189780004   
+Delhi      India        28.67   77.23    159260006   
+Shanghai   China        31.2165 121.4365 149870007   
+Kolkata                 22.495  88.3247  147870008   
+Los AngelesUnited States34.1139 -118.4068128154759   
+Dhaka      Bangladesh   23.7231 90.4086  1279739410  

@@ -1,0 +1,565 @@
+{% extends 'headmenu.html' %}
+
+{% block rfs_content %}
+
+
+    <script>
+    function formatDate(date) {
+        var d = new Date(date),
+            month = '' + (d.getMonth() + 1),
+            day = '' + d.getDate(),
+            year = d.getFullYear();
+
+        if (month.length < 2)
+            month = '0' + month;
+        if (day.length < 2)
+            day = '0' + day;
+
+        return [year, month, day].join('-');
+    }
+    </script>
+
+    <script>
+        $(document).ready(function() {
+
+            $('#estimatetable').DataTable({
+                paging: false,
+                scrollY: 400,
+                fixedHeader: false,
+                "sScrollX": "100%",
+                "bScrollCollapse": true,
+                order: [[1, 'asc']]
+            });
+
+            $('.select').selectpicker();
+
+
+            /* ******************************************* PRE POPULATE *********************************************
+               ******************************************* PRE POPULATE *********************************************
+               ******************************************* PRE POPULATE *********************************************
+            */
+
+
+
+
+            /* ******************************************* PRE POPULATE *********************************************
+               ******************************************* PRE POPULATE *********************************************
+               ******************************************* PRE POPULATE *********************************************
+            */
+
+            $('.selectpicker').on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
+
+            });
+        } );
+
+    </script>
+
+
+    <div class="contentnav overflow-auto" style="min-height:400px">
+        <form name="initRFS" id="initRFS" method="post" action="./estimates">
+            {% csrf_token %}
+            <input type="hidden" name="rfs_request_id" value="{{rfs_request_data.rfs_request_id}}">
+
+
+            <div id="bykt" >
+                <div class="card">
+                    <div class="card-header" style="background-color:rgba(227, 199, 88, 0.21)" id="bkheading">
+                        <h5 class="mb-0">
+                        <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#bkform" aria-expanded="false" aria-controls="bkform">
+                          Knowledge Transfer
+                        </button>
+                        </h5>
+                    </div>
+
+                    <div id="bkform" class="collapse show" aria-labelledby="bkheading" data-parent="#bykt">
+                        <div class="card-body">
+                            <table class="rbstable">
+                                <tr>
+                                    <th>Knowledge Transfer</th>
+                                    <th>Effort</th>
+                                    <th>Unit</th>
+                                    <th>Comments</th>
+                                </tr>
+                                <tr>
+                                    <td>Application Knowledge Transfer</td>
+                                    <td><input type="number" name="KTAPP_hrs"></td>
+                                    <td>Hours</td>
+                                    <td><input type="text" name="KTAPP_comments"></td>
+                                </tr>
+                                <tr>
+                                    <td>Perform Steady State Readiness Review</td>
+                                    <td><input type="number" name="KTSSR_hrs"></td>
+                                    <td>Hours</td>
+                                    <td><input type="text" name="KTSSR_comments"></td>
+                                </tr>
+                                <tr>
+                                    <td>Total KT</td>
+                                    <td></td>
+                                    <td>Hours</td>
+                                    <td></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div> <!--- kt end --->
+
+            <div id="byts" >
+            <div class="card">
+                <div class="card-header" style="background-color:rgba(227, 199, 88, 0.21)" id="btheading">
+                    <h5 class="mb-0">
+                    <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#btform" aria-expanded="false" aria-controls="btform">
+                      Testing Services
+                    </button>
+                    </h5>
+                </div>
+
+                <div id="btform" class="collapse show" aria-labelledby="btheading" data-parent="#byts">
+                    <div class="card-body">
+                        <table class="rbstable">
+                            <tr>
+                                <th>Testing Services</th>
+                                <th>Effort</th>
+                                <th>Unit</th>
+                                <th>Comments</th>
+                            </tr>
+                            <tr>
+                                <td>Systems Integration Testing</td>
+                                <td><input type="number" name="SIT_hrs"></td>
+                                <td>Hours</td>
+                                <td><input type="text" name="SIT_comments"></td>
+                            </tr>
+                            <tr>
+                                <td>User Acceptance Testing</td>
+                                <td><input type="number" name="UAT_hrs"></td>
+                                <td>Hours</td>
+                                <td><input type="text" name="UAT_comments"></td>
+                            </tr>
+                             <tr>
+                                <td>Performance Testing</td>
+                                <td><input type="number" name="PERF_hrs"></td>
+                                <td>Hours</td>
+                                <td><input type="text" name="PERF_comments"></td>
+                            </tr>
+                            <tr>
+                                <td>Security Testing</td>
+                                <td><input type="number" name="SEC_hrs"></td>
+                                <td>Hours</td>
+                                <td><input type="text" name="SEC_comments"></td>
+                            </tr>
+                            <tr>
+                                <td>Accessibility Testing</td>
+                                <td><input type="number" name="ACC_hrs"></td>
+                                <td>Hours</td>
+                                <td><input type="text" name="ACC_comments"></td>
+                            </tr>
+                            <tr>
+                                <td>Production Acceptance Testing</td>
+                                <td><input type="number" name="PRDAT_hrs"></td>
+                                <td>Hours</td>
+                                <td><input type="text" name="PRDAT_comments"></td>
+                            </tr>
+                            <tr>
+                                <td>QA Portfolio Manager Support</td>
+                                <td><input type="number" name="POM_hrs"></td>
+                                <td>Hours</td>
+                                <td><input type="text" name="POM_comments"></td>
+                            </tr>
+                            <tr>
+                                <td>Total Testing Service</td>
+                                <td></td>
+                                <td>Hours</td>
+                                <td></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            </div> <!--- kt end --->
+
+            <div id="bytotal" >
+                <div class="card">
+                    <div class="card-header" style="background-color:rgba(227, 199, 88, 0.21)" id="btoheading">
+                        <h5 class="mb-0">
+                        <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#btoform" aria-expanded="false" aria-controls="btoform">
+                          Total QA Cost
+                        </button>
+                        </h5>
+                    </div>
+
+                    <div id="btoform" class="collapse show" aria-labelledby="btoheading" data-parent="#bytotal">
+                        <div class="card-body">
+                            <table class="rbstable">
+                                <tr>
+                                    <th>Total QA</th>
+                                    <th>Effort</th>
+                                    <th>Unit</th>
+                                    <th>Comments</th>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td></td>
+                                    <td>$$</td>
+                                    <td><input type="text" name="KTAPP_comments"></td>
+                                </tr>
+
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div> <!--- kt end --->
+
+            <div id="bytr" >
+                <div class="card">
+                    <div class="card-header" style="background-color:rgba(227, 199, 88, 0.21)" id="btrheading">
+                        <h5 class="mb-0">
+                        <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#btrform" aria-expanded="false" aria-controls="btrform">
+                          Travel Cost
+                        </button>
+                        </h5>
+                    </div>
+
+                    <div id="btrform" class="collapse show" aria-labelledby="btrheading" data-parent="#bytr">
+                        <div class="card-body">
+                            <table class="rbstable">
+                                <tr>
+                                    <th></th>
+                                    <th>Effort</th>
+                                    <th>Unit</th>
+                                    <th>Comments</th>
+                                </tr>
+                                <tr>
+                                    <td>Travel  to site Cost ( Approximately)</td>
+                                    <td><input type="number" name="TRVCO_hrs"></td>
+                                    <td>$$</td>
+                                    <td><input type="text" name="TRVCO_comments"></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div> <!--- kt end --->
+
+            <div id="bysitrole" >
+                <div class="card">
+                    <div class="card-header" style="background-color:rgba(227, 199, 88, 0.21)" id="bysitheading">
+                        <h5 class="mb-0">
+                        <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#bysitform" aria-expanded="false" aria-controls="bysitform">
+                          QA CoE SIT Role
+                        </button>
+                        </h5>
+                    </div>
+
+                    <div id="bysitform" class="collapse show" aria-labelledby="bysitheading" data-parent="#bysitrole">
+                        <div class="card-body">
+                            <table class="rbstable">
+                                <tr>
+                                    <th>Select Role</th>
+                                    <th>Describe QA CoE Role and Scope</th>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <select name="SITRole">
+                                            <option value=""> </option>
+                                            <option value="QA CoE lead - Full Scope">QA CoE lead - Full Scope</option>
+                                            <option value="QA CoE Lead - Partial Scope">QA CoE Lead - Partial Scope</option>
+                                            <option value="QA CoE Support">QA CoE Support</option>
+                                        </select>
+                                    </td>
+                                    <td><textarea name="SITDescription" cols="50" placeholder="<Provide additional details describing QA CoE SIT Role project.>"></textarea> </td>
+                                </tr>
+                            </table>
+
+                            <br><br>
+
+                            <table class="rbstable">
+                                <tr>
+                                    <td>
+                                        <div>Update RACI per requirements of the Project</div>
+                                        <div>RACI should be included in the Master Test Plan</div>
+                                    </td>
+                                    <th colspan="3" style="text-align:center;width:65%;">SIT</th>
+                                </tr>
+                                <tr>
+                                    <td>High Level Project Activities</td>
+                                    <th style="text-align:center">Project Team</th>
+                                    <th style="text-align:center">QA CoE</th>
+                                    <th style="text-align:center">other</th>
+                                </tr>
+                                <tr>
+                                    <td>Create and Configure QC Projects</td>
+                                    <td style="text-align:center">
+                                        <table style="margin:auto;width:50%;font-size:x-small">
+                                            <tr><td>R</td><td>A</td><td>C</td><td>I</td></tr>
+                                            <tr>
+                                                <td><input type="radio" name="SITRole_CCQC_R" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_CCQC_A" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_CCQC_C" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_CCQC_I" value="Project"></td>
+                                            </tr>
+
+                                        </table>
+                                    </td>
+                                    <td style="text-align:center">
+                                        <table style="margin:auto;width:50%;font-size:x-small">
+                                            <tr><td>R</td><td>A</td><td>C</td><td>I</td></tr>
+                                            <tr>
+                                                <td><input type="radio" name="SITRole_CCQC_R" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_CCQC_A" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_CCQC_C" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_CCQC_I" value="QACoE"></td>
+                                            </tr>
+
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+
+                                <tr>
+                                    <td>Test Plan and Test Preparation</td>
+                                    <td style="text-align:center">
+                                        <table style="margin:auto;width:50%;font-size:x-small">
+                                            <tr><td>R</td><td>A</td><td>C</td><td>I</td></tr>
+                                            <tr>
+                                                <td><input type="radio" name="SITRole_TPLPR_R" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_TPLPR_A" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_TPLPR_C" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_TPLPR_I" value="Project"></td>
+                                            </tr>
+
+                                        </table>
+                                    </td>
+                                    <td style="text-align:center">
+                                        <table style="margin:auto;width:50%;font-size:x-small">
+                                            <tr><td>R</td><td>A</td><td>C</td><td>I</td></tr>
+                                            <tr>
+                                                <td><input type="radio" name="SITRole_TPLPR_R" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_TPLPR_A" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_TPLPR_C" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_TPLPR_I" value="QACoE"></td>
+                                            </tr>
+
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+
+                                <tr>
+                                    <td>Upload TC's to QC, Setup Lab</td>
+                                    <td style="text-align:center">
+                                        <table style="margin:auto;width:50%;font-size:x-small">
+                                            <tr><td>R</td><td>A</td><td>C</td><td>I</td></tr>
+                                            <tr>
+                                                <td><input type="radio" name="SITRole_TC2QC_R" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_TC2QC_A" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_TC2QC_C" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_TC2QC_I" value="Project"></td>
+                                            </tr>
+
+                                        </table>
+                                    </td>
+                                    <td style="text-align:center">
+                                        <table style="margin:auto;width:50%;font-size:x-small">
+                                            <tr><td>R</td><td>A</td><td>C</td><td>I</td></tr>
+                                            <tr>
+                                                <td><input type="radio" name="SITRole_TC2QC_R" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_TC2QC_A" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_TC2QC_C" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_TC2QC_I" value="QACoE"></td>
+                                            </tr>
+
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+
+                                <tr>
+                                    <td>Execute TCs and Record Results in QC</td>
+                                    <td style="text-align:center">
+                                        <table style="margin:auto;width:50%;font-size:x-small">
+                                            <tr><td>R</td><td>A</td><td>C</td><td>I</td></tr>
+                                            <tr>
+                                                <td><input type="radio" name="SITRole_EXCTC_R" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_EXCTC_A" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_EXCTC_C" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_EXCTC_I" value="Project"></td>
+                                            </tr>
+
+                                        </table>
+                                    </td>
+                                    <td style="text-align:center">
+                                        <table style="margin:auto;width:50%;font-size:x-small">
+                                            <tr><td>R</td><td>A</td><td>C</td><td>I</td></tr>
+                                            <tr>
+                                                <td><input type="radio" name="SITRole_EXCTC_R" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_EXCTC_A" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_EXCTC_C" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_EXCTC_I" value="QACoE"></td>
+                                            </tr>
+
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+
+                                <tr>
+                                    <td>Create / Manage Defects in QC</td>
+                                    <td style="text-align:center">
+                                        <table style="margin:auto;width:50%;font-size:x-small">
+                                            <tr><td>R</td><td>A</td><td>C</td><td>I</td></tr>
+                                            <tr>
+                                                <td><input type="radio" name="SITRole_MNGQC_R" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_MNGQC_A" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_MNGQC_C" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_MNGQC_I" value="Project"></td>
+                                            </tr>
+
+                                        </table>
+                                    </td>
+                                    <td style="text-align:center">
+                                        <table style="margin:auto;width:50%;font-size:x-small">
+                                            <tr><td>R</td><td>A</td><td>C</td><td>I</td></tr>
+                                            <tr>
+                                                <td><input type="radio" name="SITRole_MNGQC_R" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_MNGQC_A" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_MNGQC_C" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_MNGQC_I" value="QACoE"></td>
+                                            </tr>
+
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+
+                                <tr>
+                                    <td>Create Daily Test Execution Report</td>
+                                    <td style="text-align:center">
+                                        <table style="margin:auto;width:50%;font-size:x-small">
+                                            <tr><td>R</td><td>A</td><td>C</td><td>I</td></tr>
+                                            <tr>
+                                                <td><input type="radio" name="SITRole_CDTER_R" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_CDTER_A" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_CDTER_C" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_CDTER_I" value="Project"></td>
+                                            </tr>
+
+                                        </table>
+                                    </td>
+                                    <td style="text-align:center">
+                                        <table style="margin:auto;width:50%;font-size:x-small">
+                                            <tr><td>R</td><td>A</td><td>C</td><td>I</td></tr>
+                                            <tr>
+                                                <td><input type="radio" name="SITRole_CDTER_R" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_CDTER_A" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_CDTER_C" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_CDTER_I" value="QACoE"></td>
+                                            </tr>
+
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+
+                                <tr>
+                                    <td>Run Daily Test Call</td>
+                                    <td style="text-align:center">
+                                        <table style="margin:auto;width:50%;font-size:x-small">
+                                            <tr><td>R</td><td>A</td><td>C</td><td>I</td></tr>
+                                            <tr>
+                                                <td><input type="radio" name="SITRole_RDTC_R" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_RDTC_A" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_RDTC_C" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_RDTC_I" value="Project"></td>
+                                            </tr>
+
+                                        </table>
+                                    </td>
+                                    <td style="text-align:center">
+                                        <table style="margin:auto;width:50%;font-size:x-small">
+                                            <tr><td>R</td><td>A</td><td>C</td><td>I</td></tr>
+                                            <tr>
+                                                <td><input type="radio" name="SITRole_RDTC_R" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_RDTC_A" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_RDTC_C" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_RDTC_I" value="QACoE"></td>
+                                            </tr>
+
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+
+                                <tr>
+                                    <td>Weekly Test Reporting</td>
+                                    <td style="text-align:center">
+                                        <table style="margin:auto;width:50%;font-size:x-small">
+                                            <tr><td>R</td><td>A</td><td>C</td><td>I</td></tr>
+                                            <tr>
+                                                <td><input type="radio" name="SITRole_WTR_R" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_WTR_A" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_WTR_C" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_WTR_I" value="Project"></td>
+                                            </tr>
+
+                                        </table>
+                                    </td>
+                                    <td style="text-align:center">
+                                        <table style="margin:auto;width:50%;font-size:x-small">
+                                            <tr><td>R</td><td>A</td><td>C</td><td>I</td></tr>
+                                            <tr>
+                                                <td><input type="radio" name="SITRole_WTR_R" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_WTR_A" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_WTR_C" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_WTR_I" value="QACoE"></td>
+                                            </tr>
+
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+
+                                <tr>
+                                    <td>Manage and Coordinate x-team / E2E testing</td>
+                                    <td style="text-align:center">
+                                        <table style="margin:auto;width:50%;font-size:x-small">
+                                            <tr><td>R</td><td>A</td><td>C</td><td>I</td></tr>
+                                            <tr>
+                                                <td><input type="radio" name="SITRole_MXE2E_R" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_MXE2E_A" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_MXE2E_C" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_MXE2E_I" value="Project"></td>
+                                            </tr>
+
+                                        </table>
+                                    </td>
+                                    <td style="text-align:center">
+                                        <table style="margin:auto;width:50%;font-size:x-small">
+                                            <tr><td>R</td><td>A</td><td>C</td><td>I</td></tr>
+                                            <tr>
+                                                <td><input type="radio" name="SITRole_MXE2E_R" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_MXE2E_A" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_MXE2E_C" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_MXE2E_I" value="QACoE"></td>
+                                            </tr>
+
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+
+                            </table>
+
+
+
+                        </div>
+                    </div>
+                </div>
+            </div> <!--- kt end --->
+
+            <br><br><br><br><br><br><br><br>
+
+        </form>
+    </div>
+
+
+{% endblock %}

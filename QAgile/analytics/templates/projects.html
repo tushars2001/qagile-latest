@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+{% block content %}
+    {% if request.GET.error %}
+        <p>{{request.GET.error}}</p>
+    {% endif %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<script>
+    function update_tracking(ob){
+        $.ajax({
+            url: "/analytics/jira/projects/tracking/",
+            type: "post", //send it through post method
+            data: {'project_id': ob.name.split('_')[1], 'tracking': $(ob).is(':checked')},
+            headers: {'X-CSRFToken': '{{csrf_token}}'},
+            beforeSend: function(xhr){
+                    document.getElementById('track_message_' + ob.name.split('_')[1]).innerHTML = '';
+            },
+            success: function(response) {
+                console.log(response);
+                if (response.success){
+                    document.getElementById('track_message_' + ob.name.split('_')[1]).innerHTML = 'Updated';
+                }
+                else{
+                    document.getElementById('track_message_' + ob.name.split('_')[1]).innerHTML = 'Error';
+                    if ($(ob).is(':checked')) ob.checked = false; else ob.checked = true;
+                }
+            },
+            error: function(response) {
+                document.getElementById('track_message_' + ob.name.split('_')[1]).innerHTML = 'Error';
+                if ($(ob).is(':checked')) ob.checked = false; else ob.checked = true;
+            },
+            complete: function(){
+                console.log("complete");
+                $("#track_message_" + ob.name.split('_')[1]).fadeIn();
+                $("#track_message_" + ob.name.split('_')[1]).fadeOut();
+            }
+        });
+    }
+
+    function setMargins() {
+
+        width = $(window).width();
+        $("#projects_tbl").width(width*.8);
+        containerWidth = $("#projects_tbl").width();
+        leftMargin = (width-containerWidth)/2;
+        offset = $("#job_details_div").position().left;
+        $("#projects_tbl").css("marginLeft", leftMargin - offset);
+    }
+    var timer;
+    function refresh_projects(){
+        $.ajax({
+            url: "/test_data_v2/jira/test_cases/?method=jira_load_all_projects",
+            type: "get", //send it through post method
+            beforeSend: function(xhr){
+                    document.getElementById('refresh_job_details').innerHTML = 'Starting Job. <br>';
+            },
+            success: function(response) {
+                console.log(response);
+                if (response.runid.length){
+                    document.getElementById('refresh_job_details').innerHTML += 'Started. RunID: ' + response.runid + '<br>';
+                }
+                else{
+                    document.getElementById('refresh_job_details').innerHTML = 'Could not start <br>' + document.getElementById('refresh_job_details').innerHTML;
+                }
+                timer = setInterval(function() {
+                    $.ajax({
+                        url: "/test_data_v2/jira/test_cases/?method=job_status&runid=" + response.runid,
+                        type: "get",
+                        success: function(response){
+                            if (typeof response.job_status == 'object'){
+                                if(response.job_status[0].load_status == 'finished'){
+                                    document.getElementById('refresh_job_details').innerHTML = "Completed!<br>" + document.getElementById('refresh_job_details').innerHTML;
+                                    document.getElementById('refresh_job_details').innerHTML = "processed: "+ + response.job_status[0].records_processed+'/'+response.job_status[0].records_processed + "<br>" + document.getElementById('refresh_job_details').innerHTML;
+                                    clearInterval(timer);
+                                    document.getElementById('refresh_job_details').innerHTML = "Refreshing in 2 seconds<br>" + document.getElementById('refresh_job_details').innerHTML;
+                                    setTimeout(function(){
+                                        location.reload();
+                                    }, 2000);
+                                }
+                                if(response.job_status[0].load_status == 'processing'){
+                                    document.getElementById('refresh_job_details').innerHTML = 'Processing: ' + response.job_status[0].records_processed+'/'+response.job_status[0].records_processed + '<br>' + document.getElementById('refresh_job_details').innerHTML;
+                                }
+                                if(response.job_status[0].load_status == 'waiting-jira'){
+                                    document.getElementById('refresh_job_details').innerHTML = 'Waiting for Jira<br>' + document.getElementById('refresh_job_details').innerHTML;
+                                }
+                            }
+                        },
+                        complete: function(){
+
+                        }
+                    });
+                }, 1000);
+                setTimeout(function(){
+                    clearInterval(timer);
+                }, 60000);
+            },
+            error: function(response) {
+                document.getElementById('refresh_job_details').innerHTML = 'Problem starting job <br>';
+            },
+            complete: function(){
+                console.log("complete");
+                $("#refresh_job_details").fadeIn();
+            }
+        });
+    }
+</script>
+
+<h3>
+    <a style="text-decoration: none;color:black; " href="/analytics/jira/">Job View</a>
+    <a style="text-decoration: none;color:black;text-decoration: underline;" href="/analytics/jira/projects/"> Projects View</a> <span style="font-size:small; cursor:pointer" onclick="refresh_projects();">Refresh Projects from Jira</span></h3>
+<div style="display:none;max-height:100px;overflow-y: auto;" id="refresh_job_details"></div>
+<div id="job_details_div">
+    <table class="rbstable" id="projects_tbl">
+        <thead>
+            <tr>
+                <th>
+                    Tracking
+                </th>
+                <th>
+                    Project ID
+                </th>
+                <th>
+                    Title
+                </th>
+                <th>
+                    Test Cases
+                </th>
+                <th>
+                    Defects
+                </th>
+                <th>
+                    Test Executions
+                </th>
+                <th>
+                    Last TC Job
+                </th>
+                <th>
+                    Last Bugs Job
+                </th>
+                <th>
+                    Last Exec Job
+                </th>
+            </tr>
+        </thead>
+        <tbody id="projects_tbl_body">
+            {% for rec in projects %}
+                <tr>
+                    <td>
+                        <input type="checkbox" onclick="update_tracking(this);" name="tracking_{{rec.project_id}}" {% if rec.track %}checked{% endif %}>
+                        <div id="track_message_{{rec.project_id}}" style="display:none"></div>
+                        </td>
+                    <td>{{rec.project_id}}</td>
+                    <td>{{rec.title}}</td>
+                    <td><span style="cursor:pointer" onclick="refresh_tcs('{{rec.project_id}}');"><i class="fa fa-refresh"></i></span> {{rec.test_cases}} </td>
+                    <td><span style="cursor:pointer" onclick="refresh_defects('{{rec.project_id}}');"><i class="fa fa-refresh"></i></span> {{rec.defects}} </td>
+                    <td><span style="cursor:pointer" onclick="refresh_executions('{{rec.project_id}}');"><i class="fa fa-refresh"></i></span> {{rec.test_executions}} </td>
+                    <td nowrap>{{rec.tcs_last_ran|date:'Y-m-d G:i:s'}}</td>
+                    <td nowrap>{{rec.defect_last_ran|date:'Y-m-d G:i:s'}}</td>
+                    <td nowrap>{{rec.execution_last_ran|date:'Y-m-d G:i:s'}}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+
+    $(document).ready(function(){
+        $('#projects_tbl').DataTable({
+            paging: true,
+            order: [[3, 'desc'], [4, 'desc'], [5, 'desc']],
+        });
+
+        setMargins();
+        $(window).resize(function() {
+            setMargins();
+        });
+
+    });
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+{% load static%}
+{% block content %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+
+<table border="1" width="100%" style="" cellspacing="30px" cellpadding="15px">
+
+    <tr>
+        <td height="30px">
+            <h1>RBS QA CoE Initiative</h1>
+        </td>
+    </tr>
+     <tr>
+        <td height="20px">
+            <h5>Goal:</h5>
+            <p>To build an integrated system for QA organization that integrates processes, tools and people and act as one stop shop for QA and RBS.</p>
+        </td>
+    </tr>
+    <tr>
+        <td height="20px">
+            <h5>What's in a name:</h5>
+            <p>QAgile is QA + Agile. To bring agility in QA. Agile here is literal. Software Methodology can't hijack the meaning of the word.</p>
+        </td>
+    </tr>
+    <tr>
+        <td height="30px">
+            <h5>Current Features:</h5>
+            <ul><b>RFS Features</b>
+                <li>Quick Resource Selection</li>
+                <li>Auto populates resource info</li>
+                <li>Hours Spread</li>
+                <li>Visibility of Resource Available capacity by week</li>
+                <li>Visibility of Resource assignments by week</li>
+                <li>Auto populate deafult RACIs</li>
+                <li>Hrs automatch between estimates and Res loading</li>
+                <li>Detailed Status Track history</li>
+                <li>Versiong of approvals</li>
+                <li>View previous versions</li>
+                <li>Export RFS to excel</li>
+                <li>Add comments when reject/reopen</li>
+                <li>Ability to filter RFS lists by domains, PoM, Statuses</li>
+                <li>Soft delete RFS</li>
+                <li>Auto-approve for adjustments (if total hrs not changed)</li>
+                <li>Auto Audit RFS</li>
+            </ul>
+            <ul><b>RFS Workflow</b>
+                <li>Create</li>
+                <li>Save</li>
+                <li>Submit for Approval
+                <li>Recall</li>
+                <li>>Approve</li
+                <li>Reject</li>
+                <li>Reopen</li>
+            </ul>
+            <ul><b>Access Levels</b>
+                <li>Team Management</li>
+                <li>RFS View</li>
+                <li>RFS Edit</li>
+                <li>RFS Approvers</li>
+            </ul>
+            <ul><b>Analytics</b>
+                <li>Resource Plan</li>
+                <li>Filter by domains/individual resources</li>
+                <li>Detailed view of resources/assignment</li>
+                <li>Planned VS Actuals (Vs Capacity)</li>
+                <li>PvsA: by org, domains, projects, people</li>
+            </ul>
+            <ul><b>Profile</b>
+                <li>Manage capacity</li>
+                <li>Capacity Notes</li>
+                <li>PoM: My Approval Queue</li>
+                <li>My Domain RFSs</li>
+                <li>PoM: Approval Delegation</li>
+                <li>My planned vs actuals in last 6 weeks</li>
+                <li>My Planned Hrs this week</li>
+                <li>Update Password/Email/Ph</li>
+            </ul>
+            <ul><b>Team Data</b>
+                <li>Dynamic Org Chart</li>
+                <li></li>Graphs-Onshore/Offshore, Domain Pie, Heads by rates etc</li>
+                <li>Add/Update/End Date Resources</li>
+                <li>Add/Update domians</li>
+                <li></li>Add/Update roles
+                <li></li>Add/Update location
+                <li></li>Add/update rates
+                <li>Quick Account Create
+                <li>Reset Tool Password of anyone
+            </ul>
+            <p>Please send email/IM to <a href="mailto: tushar.saxena@delhaize.com">Tushar Saxena</a> to report any bug, feature suggestions or comments</p>
+        </td>
+    </tr>
+    <tr>
+        <td height="30px">
+            <h5>Future Features:</h5>
+            <p>Tenrox Integration - Integrate tenrox data for automated effort and cost analysis, planned vs actuals etc.</p>
+            <p>Jira/ALM Integration: To bring in uniform analytics and reporting across projects. </p>
+            <p>SharePoint Integration - Keep documents stored in SharePoint behind the scene and manage documents from single point. </p>
+            <p>QA Project Execution Workflows: Start to finish project and process execution. </p>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Bigger Idea
+			<canvas id="pdf-viewer"></canvas>
+			<!--<embed src="{% static 'images/QA_CoE_UP.pdf' %}" width="100%" height="600px" />
+            <iframe src="{% static 'images/QA_CoE_UP.pdf' %}" width="100%" height="500px">-->
+
+        </td>
+    </tr>
+
+
+</table>
+<script>
+	$("document").ready(function(){
+	
+		
+	  // Load the PDF file
+	  const pdfUrl = "{% static 'images/QA_CoE_UP.pdf' %}";
+	  pdfjsLib.getDocument(pdfUrl).then(function(pdf) {
+	  // Get the total number of pages
+	  var numPages = pdf.numPages;
+
+	  // Initialize the current page number to 1
+	  var currentPage = 1;
+
+	  // Create the previous page button
+	  var prevButton = document.createElement('button');
+	  prevButton.textContent = 'Previous Page';
+	  prevButton.addEventListener('click', function() {
+		if (currentPage > 1) {
+		  currentPage--;
+		  displayPage(currentPage);
+		}
+	  });
+	  document.body.appendChild(prevButton);
+
+	  // Create the next page button
+	  var nextButton = document.createElement('button');
+	  nextButton.textContent = 'Next Page';
+	  nextButton.addEventListener('click', function() {
+		if (currentPage < numPages) {
+		  currentPage++;
+		  displayPage(currentPage);
+		}
+	  });
+	  document.body.appendChild(nextButton);
+
+	  // Display the first page
+	  displayPage(1);
+
+	  // Function to display a specific page
+	  function displayPage(pageNumber) {
+		pdf.getPage(pageNumber).then(function(page) {
+		  // Create a canvas element to display the page
+		  var canvas = document.createElement('canvas');
+		  canvas.style.display = 'block';
+		  canvas.style.margin = '10px auto';
+		  document.body.insertBefore(canvas, nextButton);
+
+		  // Set the canvas dimensions to match the page size
+		  var viewport = page.getViewport(1);
+		  canvas.width = viewport.width;
+		  canvas.height = viewport.height;
+
+		  // Render the page on the canvas
+		  page.render({canvasContext: canvas.getContext('2d')});
+
+		  // Update the current page number
+		  currentPage = pageNumber;
+		});
+	  }
+	});
+  });
+</script>
+
+{% endblock %}

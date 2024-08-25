@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block content %}
+    {% if request.GET.error %}
+        <p>{{request.GET.error}}</p>
+    {% endif %}
+
+    {% if user.username == 'vn05672' %}
+    <table class="rbstable">
+        <tr><td>Upload Tenrox XML Data</td>
+            <td>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="file" name="myfile" required>
+                <button type="submit">Upload</button>
+            </form>
+        </td></tr>
+
+        {% if uploaded_file_url %}
+        <tr><td colspan="2">
+            <p>File uploaded</p>
+        </td></tr>
+        {% endif %}
+    </table>
+
+    <table class="rbstable">
+        <tr><td>Process Tenrox XML Data</td>
+            <td>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="process" value="true">
+                <button type="submit">Process</button>
+            </form>
+        </td></tr>
+
+        {% if processed %}
+        <tr><td colspan="2">
+            <p>File Processed with {{processed}} records</p>
+        </td></tr>
+        {% endif %}
+    </table>
+    {% endif %}
+
+    <table class="rbstable">
+        <tr><td><a href="planned-vs-actuals">Planned VS Actuals</a></td></tr>
+    </table>
+
+    <table class="rbstable">
+        <tr><td><a href="resource-plan">Resource Plan</a></td></tr>
+    </table>
+
+{% endblock %}

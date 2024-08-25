@@ -1,0 +1,779 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'js/ion.rangeSlider-master/css/ion.rangeSlider.min.css' %}" >
+<script type="text/javascript" src="{% static 'js/ion.rangeSlider-master/js/ion.rangeSlider.js' %}" type="javascript"></script>
+<link rel="stylesheet" type="text/css" href="{% static 'js/Chart.js/Chart.css' %}" >
+<script type="text/javascript" src="{% static 'js/Chart.js/Chart.js' %}" type="javascript"></script>
+
+<script language="JavaScript">
+    var project_person = [];
+    var domain_person = [];
+    var loopcnt = 0;
+
+    {% for row in project_person %}
+        project_person.push({
+            'project_id': '{{row.project_id}}',
+            'vnid': '{{row.vnid}}'
+        });
+    {% endfor %}
+
+    {% for row in domain_person %}
+        domain_person.push({
+            'domain_id': '{{row.domain_id}}',
+            'vnid': '{{row.vnid}}'
+        });
+    {% endfor %}
+
+    {% for row in project_persons %}
+        project_persons.push([{"{{row.project_id}}":"{{row.vnid}}"}]);
+    {% endfor %}
+
+
+
+    function orgselect(ob){
+        console.log(ob.value);
+        if($(ob).is(":checked")){
+            $('#domainselect').selectpicker('deselectAll');
+            $('#projectselect').selectpicker('deselectAll');
+            $('#personselect').selectpicker('deselectAll');
+            $('#domainselect').prop("disabled",true);
+            $('#projectselect').prop("disabled",true);
+            $('#personselect').prop("disabled",true);
+            $('#domainselect').selectpicker('refresh');
+            $('#projectselect').selectpicker('refresh');
+            $('#personselect').selectpicker('refresh');
+        }
+        else {
+            $('#domainselect').prop("disabled","");
+            $('#projectselect').prop("disabled","");
+            $('#personselect').prop("disabled","");
+            $('#domainselect').selectpicker('refresh');
+            $('#projectselect').selectpicker('refresh');
+            $('#personselect').selectpicker('refresh');
+        }
+    }
+
+    function trigger_ds_nouse(isSelected, domain_id){
+        /* this will do what happens when a domain is selected or removed from domain list
+           get list of all selected domain_ids
+           loop over this list in loop_domain
+                 loop over project_list
+                    if pl_domain == loop_domain  // work on only projects that are for domain in question
+                        if pl_domain == domian_id // if this is for changed domain
+                            if isSselected // and it was selected
+                                show it
+                                select id
+                            else // and it was deselected
+                                hide it
+                                deselect it
+                        else // this is for earlier selected domain
+                            make sure to show it
+                loop project end
+            loop domain end
+
+           by default select all related projects if isselected is true for domain_id
+
+         */
+        arr_selected_domains = $('#domainselect').val();
+        arr_selected_domains.push(domain_id);
+        arr_projects = $('#projectselect').val();
+        for(var i=0; i<arr_selected_domains.length; i++){
+            console.log("Checking domain " + arr_selected_domains[i]);
+            for(var j=0; j<$('#projectselect')[0].length; j++){
+                loopcnt++;
+                project_id = $('#projectselect')[0][j].value;
+                if(domain_projects[project_id] == arr_selected_domains[i]){
+                    if(domain_projects[project_id] == domain_id){
+                        if(isSelected){
+                            $('#projectselect').find('[value='+project_id+']').show();
+                            $('#projectselect').find('[value='+project_id+']')[0].selected = true;
+                            $('#projectselect').selectpicker('refresh');
+                            trigger_ps(isSelected,project_id);
+                        }
+                        else {
+                            $('#projectselect').find('[value='+project_id+']')[0].selected = false;
+                            //$('#projectselect').find('[value='+project_id+']').hide();
+                            $('#projectselect').selectpicker('refresh');
+                            trigger_ps(isSelected,project_id);
+                        }
+                    }
+                    else {
+                        $('#projectselect').find('[value='+project_id+']').show();
+                        $('#projectselect').selectpicker('refresh');
+                    }
+                }
+                else {
+                    $('#projectselect').find('[value='+project_id+']').show();
+                    $('#projectselect').selectpicker('refresh');
+                }
+            }
+        }
+    }
+
+    function trigger_ds(isSelected, domain_id){
+        var persons = []
+        domains = $('#domainselect').val();
+        $('#personselect').selectpicker('val','');
+        for(i=0; i<domains.length; i++)
+        {
+            for(j=0; j<domain_person.length; j++){
+                if (domains[i] == domain_person[j].domain_id){
+                    persons.push(domain_person[j].vnid);
+                }
+            }
+            $('#personselect').selectpicker('val',persons);
+        }
+
+    }
+
+    function trigger_ps(isSelected, project_id){
+        var persons = []
+        projects = $('#projectselect').val();
+        $('#personselect').selectpicker('val','');
+        for(i=0; i<projects.length; i++)
+        {
+            for(j=0; j<project_person.length; j++){
+                if (projects[i] == project_person[j].project_id){
+                    persons.push(project_person[j].vnid);
+                }
+            }
+            $('#personselect').selectpicker('val',persons);
+        }
+
+    }
+
+    function in_project(person_id,project_id){
+        for(var i=0; i<project_persons.length;i++){
+            console.log("Checking person " + person_id);
+            loopcnt++;
+            if(project_persons[i][0][project_id] == person_id){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    $(document).ready(function(){
+        $('#domainselect').on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
+            //console.log(previousValue);
+            //trigger_ds(isSelected, e.target[clickedIndex].value);
+        });
+
+        $('#projectselect').on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
+            //console.log(previousValue);
+            //trigger_ps(isSelected, e.target[clickedIndex].value);
+        });
+
+        $('#personselect').on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
+            //console.log(previousValue);
+        });
+        orgselect($("#org_select")[0]);
+    });
+
+
+
+</script>
+<h5><a href="/analytics/">Analytics Home</a></h5>
+<h3 style="color:black"><a href="/analytics/planned-vs-actuals"> Planned vs Actuals</a></h3>
+<form method="get">
+    {% csrf_token %}
+    <table class="rbstable">
+
+        <tr>
+
+            <td>
+                Organisation <input type="checkbox" name="org_select" id="org_select" onclick="orgselect(this);" {% if filters.org == 'on' %}checked {% endif %}>
+            </td>
+
+            <td>
+                Projects
+                <select id="projectselect" name="ppm_ids" class="selectpicker" multiple data-live-search="true" data-actions-box="true">
+
+                    {% for row_d in ppm_info %}
+                        <option value="{{row_d.project_id}}">{{row_d.project_id}} - {{row_d.project_name}}</option>
+                    {% endfor   %}
+                </select>
+            </td>
+
+            <td>
+                Domains
+                <select id="domainselect" name="domain_ids" class="selectpicker" multiple data-live-search="true" data-actions-box="true">
+                     <option value=""> </option>
+                    {% for row_d in domains_info %}
+                        <option value="{{row_d.domain_id}}">{{row_d.domain_name}}</option>
+                    {% endfor   %}
+                </select>
+            </td>
+
+            <td>
+                Resources
+                <select id="personselect" name="vnids" class="selectpicker" multiple data-live-search="true" data-actions-box="true">
+
+                    {% for row_d in persons %}
+                        <option value="{{row_d.vnid}}">{{row_d.first_name}} {{row_d.last_name}}</option>
+                    {% endfor   %}
+                </select>
+            </td>
+
+        </tr>
+        <tr>
+            <td colspan="4">
+                <input type="text" class="js-range-slider" name="dt_range" id="dt_range" value="" />
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4">
+                <input type="submit" class="greenbuttons" style="width: 100%;"  value="Let's Roll" />
+            </td>
+        </tr>
+
+    </table>
+</form>
+
+{% if chartdata %}
+    <div id="org_chart">
+        <p style="text-align:center; font-size:large; font-weight:bold;padding-top:20px;margin-top:20px;">Organization</p>
+        <button id='org_line' class="greenbuttons">Cumulative</button>
+        <button id='org_bar' class="greenbuttons">Per Week</button>
+        <canvas id="canvas_org_chart" width="800" height="400"></canvas>
+        <br><br><br>
+        <div style="display:none">
+            <table class="rbstable">
+                <tr>
+                    <th>Week</th>
+                    <th>Planned</th>
+                    <th>Actual</th>
+                </tr>
+                {% for rec in chartdata.planned %}
+                <tr>
+                    <td>{{rec.weekstart|date:"SHORT_DATE_FORMAT"}}</td>
+                    <td>{{rec.hrs}}</td>
+                    <td>{{chartdata.actuals}}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <br>
+    </div>
+
+    <div id="domain_chart">
+        <p style="text-align:center; font-size:large; font-weight:bold;padding-top:20px;margin-top:20px;">Domains</p>
+        <button id='domain_line' class="greenbuttons">Cumulative</button>
+        <button id='domain_bar' class="greenbuttons">Per Week</button>
+        <canvas id="canvas_domain_chart" width="800" height="400"></canvas>
+        <br><br><br>
+        <div style="display:none">
+            <table class="rbstable">
+                <tr>
+                    <th>Week</th>
+                    <th>Planned</th>
+                    <th>Actual</th>
+                </tr>
+                {% for rec in chartdata.planned %}
+                <tr>
+                    <td>{{rec.weekstart|date:"SHORT_DATE_FORMAT"}}</td>
+                    <td>{{rec.hrs}}</td>
+                    <td>{{chartdata.actuals}}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <br>
+    </div>
+
+    <div id="project_chart">
+        <p style="text-align:center; font-size:large; font-weight:bold;padding-top:20px;margin-top:20px;">Projects</p>
+        <button id='project_line' class="greenbuttons">Cumulative</button>
+        <button id='project_bar' class="greenbuttons">Per Week</button>
+        <canvas id="canvas_project_chart" width="800" height="400"></canvas>
+        <br><br><br>
+        <div style="display:none">
+            <table class="rbstable">
+                <tr>
+                    <th>Week</th>
+                    <th>Planned</th>
+                    <th>Actual</th>
+                </tr>
+                {% for rec in chartdata.planned %}
+                <tr>
+                    <td>{{rec.weekstart|date:"SHORT_DATE_FORMAT"}}</td>
+                    <td>{{rec.hrs}}</td>
+                    <td>{{chartdata.actuals}}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <br>
+    </div>
+
+    <div id="resource_chart">
+        <p style="text-align:center; font-size:large; font-weight:bold;padding-top:20px;margin-top:20px;">Resources</p>
+        <button id='resource_line' class="greenbuttons">Cumulative</button>
+        <button id='resource_bar' class="greenbuttons">Per Week</button>
+        <canvas id="canvas_resource_chart" width="800" height="400"></canvas>
+        <br><br><br>
+        <div style="display:none">
+            <table class="rbstable">
+                <tr>
+                    <th>Week</th>
+                    <th>Planned</th>
+                    <th>Actual</th>
+                </tr>
+                {% for rec in chartdata.planned %}
+                <tr>
+                    <td>{{rec.weekstart|date:"SHORT_DATE_FORMAT"}}</td>
+                    <td>{{rec.hrs}}</td>
+                    <td>{{chartdata.actuals}}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <br>
+    </div>
+{% endif %}
+
+<script>
+    var myChart;
+    $(document).ready(function(){
+        var lang = "en-US";
+        var d = new Date;
+        var year = d.getFullYear();
+        var month = d.getMonth();
+        var day = d.getDate();
+
+        function dateToTS (date) {
+            return date.valueOf();
+        }
+
+        function tsToDate (ts) {
+            var d = new Date(ts);
+
+            return d.toLocaleDateString(lang, {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                weekday: 'long'
+            });
+        }
+
+        $("#dt_range").ionRangeSlider({
+            skin: "big",
+            type: "double",
+            grid: true,
+            min: dateToTS(new Date(year, month-6, day)),
+            max: dateToTS(new Date(year, month+6, day)),
+            from: dateToTS(new Date(year, month-3, day)),
+            to: dateToTS(new Date(year, month+3, day)),
+            prettify: tsToDate
+        });
+
+        /* ******************************************************************* */
+
+        {% if chartdata.org_chart %}
+            planned_data = [];
+            actuals_data = [];
+            capacity_data = []
+            planned_data_c = [0];
+            actuals_data_c = [0];
+            capacity_data_c = [0];
+            x_axis = [];
+
+            hrs=0;
+            {% for rec in chartdata.org_chart.planned %}
+                tmp = {
+                    'weekstart': '{{rec.weekstart}}',
+                    'hrs': '{{rec.hrs}}'
+                }
+                v = '{{rec.weekstart}}'.split(",");
+                v.pop();
+                v = v.join(",");
+                x_axis.push(v);
+                planned_data.push('{{rec.hrs}}');
+                hrs = hrs + {{rec.hrs}};
+                planned_data_c.push(hrs);
+
+            {% endfor %}
+
+            hrs=0;
+            {% for rec in chartdata.org_chart.actuals %}
+                tmp = {
+                    'weekstart': '{{rec.weekstart}}',
+                    'hrs': '{{rec.hrs}}'
+                }
+
+                actuals_data.push('{{rec.hrs}}');
+                hrs = hrs + {{rec.hrs}};
+                actuals_data_c.push(hrs);
+
+            {% endfor %}
+
+            hrs=0;
+            {% for rec in chartdata.org_chart.capacity %}
+                {% if rec.hrs %}
+                    tmp = {
+                        'weekstart': '{{rec.weekstart}}',
+                        'hrs': '{{rec.hrs}}'
+                    }
+
+                    capacity_data.push('{{rec.hrs}}');
+                    hrs = hrs + {{rec.hrs}};
+                    capacity_data_c.push(hrs);
+                {% endif %}
+            {% endfor %}
+            console.log(x_axis);
+
+            config = {
+                type: 'bar',
+                data: {
+                    labels: x_axis,
+                    datasets: [{
+                        label: 'Planned',
+                        data: planned_data,
+                        backgroundColor: "blue",
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Actuals',
+                        data: actuals_data,
+                        backgroundColor: "green",
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Capacity',
+                        data: capacity_data,
+                        backgroundColor: "orange",
+                        borderWidth: 1
+                    }
+                    ]
+                },
+                options: {
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true
+                            }
+                        }]
+                    }
+                }
+                }
+
+            var ctx = $('#canvas_org_chart');
+            myChart = new Chart(ctx, config);
+            window.scrollTo(0,document.body.scrollHeight);
+
+        {% endif %}
+
+        /* ********************************************************************* */
+
+        {% if chartdata.domains_chart %}
+            planned_data = [];
+            actuals_data = [];
+            capacity_data = []
+            planned_data_c = [0];
+            actuals_data_c = [0];
+            capacity_data_c = [0];
+            x_axis = [];
+            hrs=0;
+            {% for rec in chartdata.domains_chart.planned %}
+                tmp = {
+                    'weekstart': '{{rec.weekstart}}',
+                    'hrs': '{{rec.hrs}}'
+                }
+                v = '{{rec.weekstart}}'.split(",");
+                v.pop();
+                v = v.join(",");
+                x_axis.push(v);
+                planned_data.push('{{rec.hrs}}');
+                hrs = hrs + {{rec.hrs}};
+                planned_data_c.push(hrs);
+
+            {% endfor %}
+            hrs=0;
+            {% for rec in chartdata.domains_chart.actuals %}
+                tmp = {
+                    'weekstart': '{{rec.weekstart}}',
+                    'hrs': '{{rec.hrs}}'
+                }
+
+                actuals_data.push('{{rec.hrs}}');
+                hrs = hrs + {{rec.hrs}};
+                actuals_data_c.push(hrs);
+
+            {% endfor %}
+
+            hrs=0;
+            {% for rec in chartdata.domains_chart.capacity %}
+                {% if rec.hrs %}
+                    tmp = {
+                        'weekstart': '{{rec.weekstart}}',
+                        'hrs': '{{rec.hrs}}'
+                    }
+
+                    capacity_data.push('{{rec.hrs}}');
+                    hrs = hrs + {{rec.hrs}};
+                    capacity_data_c.push(hrs);
+                {% endif %}
+            {% endfor %}
+
+            console.log(x_axis);
+            config = {
+                type: 'bar',
+                data: {
+                    labels: x_axis,
+                    datasets: [{
+                        label: 'Planned',
+                        data: planned_data,
+                        backgroundColor: "blue",
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Actuals',
+                        data: actuals_data,
+                        backgroundColor: "green",
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Capacity',
+                        data: capacity_data,
+                        backgroundColor: "orange",
+                        borderWidth: 1
+                    }
+                    ]
+                },
+                options: {
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true
+                            }
+                        }]
+                    }
+                }
+                }
+
+            var ctx = $('#canvas_domain_chart');
+            myChart = new Chart(ctx, config);
+
+        {% endif %}
+
+        /* ********************************************************************* */
+
+        {% if chartdata.projects_chart %}
+            planned_data = [];
+            actuals_data = [];
+            planned_data_c = [0];
+            actuals_data_c = [0];
+            x_axis = [];
+            hrs=0;
+            {% for rec in chartdata.projects_chart.planned %}
+                tmp = {
+                    'weekstart': '{{rec.weekstart}}',
+                    'hrs': '{{rec.hrs}}'
+                }
+                v = '{{rec.weekstart}}'.split(",");
+                v.pop();
+                v = v.join(",");
+                x_axis.push(v);
+                planned_data.push('{{rec.hrs}}');
+                hrs = hrs + {{rec.hrs}};
+                planned_data_c.push(hrs);
+
+            {% endfor %}
+            hrs=0;
+            {% for rec in chartdata.projects_chart.actuals %}
+                tmp = {
+                    'weekstart': '{{rec.weekstart}}',
+                    'hrs': '{{rec.hrs}}'
+                }
+
+                actuals_data.push('{{rec.hrs}}');
+                hrs = hrs + {{rec.hrs}};
+                actuals_data_c.push(hrs);
+
+            {% endfor %}
+            console.log(x_axis);
+            config = {
+                type: 'bar',
+                data: {
+                    labels: x_axis,
+                    datasets: [{
+                        label: 'Planned',
+                        data: planned_data,
+                        backgroundColor: "blue",
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Actuals',
+                        data: actuals_data,
+                        backgroundColor: "green",
+                        borderWidth: 1
+                    }
+                    ]
+                },
+                options: {
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true
+                            }
+                        }]
+                    }
+                }
+                }
+
+            ctx = $('#canvas_project_chart');
+            myChart = new Chart(ctx, config);
+
+        {% endif %}
+
+        /* ********************************************************************** */
+
+        {% if chartdata.resources_chart %}
+            planned_data = [];
+            actuals_data = [];
+            capacity_data = []
+            planned_data_c = [0];
+            actuals_data_c = [0];
+            capacity_data_c = [0];
+            x_axis = [];
+            hrs=0;
+            {% for rec in chartdata.resources_chart.planned %}
+                tmp = {
+                    'weekstart': '{{rec.weekstart}}',
+                    'hrs': '{{rec.hrs}}'
+                }
+                v = '{{rec.weekstart}}'.split(",");
+                v.pop();
+                v = v.join(",");
+                x_axis.push(v);
+                planned_data.push('{{rec.hrs}}');
+                hrs = hrs + {{rec.hrs}};
+                planned_data_c.push(hrs);
+
+            {% endfor %}
+            hrs=0;
+            {% for rec in chartdata.resources_chart.actuals %}
+                tmp = {
+                    'weekstart': '{{rec.weekstart}}',
+                    'hrs': '{{rec.hrs}}'
+                }
+
+                actuals_data.push('{{rec.hrs}}');
+                hrs = hrs + {{rec.hrs}};
+                actuals_data_c.push(hrs);
+
+            {% endfor %}
+
+            hrs=0;
+            {% for rec in chartdata.resources_chart.capacity %}
+                {% if rec.hrs %}
+                    tmp = {
+                        'weekstart': '{{rec.weekstart}}',
+                        'hrs': '{{rec.hrs}}'
+                    }
+
+                    capacity_data.push('{{rec.hrs}}');
+                    hrs = hrs + {{rec.hrs}};
+                    capacity_data_c.push(hrs);
+                {% endif %}
+            {% endfor %}
+            console.log(x_axis);
+            config = {
+                type: 'bar',
+                data: {
+                    labels: x_axis,
+                    datasets: [{
+                        label: 'Planned',
+                        data: planned_data,
+                        backgroundColor: "blue",
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Actuals',
+                        data: actuals_data,
+                        backgroundColor: "green",
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Capacity',
+                        data: capacity_data,
+                        backgroundColor: "orange",
+                        borderWidth: 1
+                    }
+                    ]
+                },
+                options: {
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true
+                            }
+                        }]
+                    }
+                }
+                }
+
+            ctx = $('#canvas_resource_chart');
+            myChart = new Chart(ctx, config);
+
+        {% endif %}
+
+        /* ********************************************************************* */
+
+        let my_range = $("#dt_range").data("ionRangeSlider")
+        {% if filters.dt_range %}
+            my_range.update({
+                from: {{filters.dt_range.0}},
+                to: {{filters.dt_range.1}}
+            });
+        {% endif %}
+
+
+
+        $("#line").click(function() {
+          change('line');
+        });
+
+        $("#bar").click(function() {
+          change('bar');
+        });
+
+        function change(newType) {
+          var ctx = document.getElementById("myChart").getContext("2d");
+
+          // Remove the old chart and all its event handles
+          if (myChart) {
+            myChart.destroy();
+          }
+
+          // Chart.js modifies the object you pass in. Pass a copy of the object so we can use the original object later
+        if(newType == 'line')
+            var temp = jQuery.extend(true, {}, config_c);
+        else
+            var temp = jQuery.extend(true, {}, config);
+          temp.type = newType;
+          myChart = new Chart(ctx, temp);
+          window.scrollTo(0,document.body.scrollHeight);
+        };
+
+        {% if filters.domains %}
+            $('#domainselect').selectpicker('val',{{filters.domains|safe|escape}});
+        {% endif %}
+
+        {% if filters.vnids %}
+            $('#personselect').selectpicker('val',{{filters.vnids|safe|escape}});
+        {% endif %}
+
+        {% if filters.ppmids %}
+            $('#projectselect').selectpicker('val',{{filters.ppmids|safe|escape}});
+        {% endif %}
+
+    });
+
+    function chart_creation(type){
+
+    }
+</script>
+
+{% endblock %}

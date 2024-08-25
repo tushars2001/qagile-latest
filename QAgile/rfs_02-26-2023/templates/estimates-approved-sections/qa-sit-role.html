@@ -1,0 +1,310 @@
+            <div id="bysitrole" >
+                <div class="card">
+                    <div class="card-header" style="background-color:rgba(227, 199, 88, 0.21)" id="bysitheading">
+                        <h5 class="mb-0">
+                        <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#bysitform" aria-expanded="false" aria-controls="bysitform">
+                          QA CoE SIT Role
+                        </button>
+                        </h5>
+                    </div>
+
+                    <div id="bysitform" class="collapse show" aria-labelledby="bysitheading" data-parent="#bysitrole">
+                        <div class="card-body">
+                            <table class="rbstable">
+                                <tr>
+                                    <th>Select Role</th>
+                                    <th>Describe QA CoE Role and Scope</th>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        {{rfs_estimates_raci_head.SITRole}}
+                                    </td>
+                                    <td>{{rfs_estimates_raci_head.SITScope}}</td>
+                                </tr>
+                            </table>
+
+                            <br><br>
+
+                            <table class="rbstable">
+                                <tr>
+                                    <td>
+                                        <div>Update RACI per requirements of the Project</div>
+                                        <div>RACI should be included in the Master Test Plan</div>
+                                    </td>
+                                    <th colspan="3" style="text-align:center;width:65%;">SIT</th>
+                                </tr>
+                                <tr>
+                                    <td>High Level Project Activities</td>
+                                    <th style="text-align:center">Project Team</th>
+                                    <th style="text-align:center">QA CoE</th>
+                                    <th style="text-align:center">other</th>
+                                </tr>
+                                <tr>
+                                    <td>Create and Configure QC Projects</td>
+                                    <td style="text-align:center">
+                                        <table style="margin:auto;width:50%;font-size:x-small">
+                                            <tr><td>R</td><td>A</td><td>C</td><td>I</td></tr>
+                                            <tr>
+                                                <td><input type="radio" name="SITRole_CCQC_R" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_CCQC_A" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_CCQC_C" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_CCQC_I" value="Project"></td>
+                                            </tr>
+
+                                        </table>
+                                    </td>
+                                    <td style="text-align:center">
+                                        <table style="margin:auto;width:50%;font-size:x-small">
+                                            <tr><td>R</td><td>A</td><td>C</td><td>I</td></tr>
+                                            <tr>
+                                                <td><input type="radio" name="SITRole_CCQC_R" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_CCQC_A" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_CCQC_C" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_CCQC_I" value="QACoE"></td>
+                                            </tr>
+
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+
+                                <tr>
+                                    <td>Test Plan and Test Preparation</td>
+                                    <td style="text-align:center">
+                                        <table style="margin:auto;width:50%;font-size:x-small">
+                                            <tr><td>R</td><td>A</td><td>C</td><td>I</td></tr>
+                                            <tr>
+                                                <td><input type="radio" name="SITRole_TPLPR_R" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_TPLPR_A" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_TPLPR_C" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_TPLPR_I" value="Project"></td>
+                                            </tr>
+
+                                        </table>
+                                    </td>
+                                    <td style="text-align:center">
+                                        <table style="margin:auto;width:50%;font-size:x-small">
+                                            <tr><td>R</td><td>A</td><td>C</td><td>I</td></tr>
+                                            <tr>
+                                                <td><input type="radio" name="SITRole_TPLPR_R" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_TPLPR_A" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_TPLPR_C" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_TPLPR_I" value="QACoE"></td>
+                                            </tr>
+
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+
+                                <tr>
+                                    <td>Upload TC's to QC, Setup Lab</td>
+                                    <td style="text-align:center">
+                                        <table style="margin:auto;width:50%;font-size:x-small">
+                                            <tr><td>R</td><td>A</td><td>C</td><td>I</td></tr>
+                                            <tr>
+                                                <td><input type="radio" name="SITRole_TC2QC_R" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_TC2QC_A" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_TC2QC_C" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_TC2QC_I" value="Project"></td>
+                                            </tr>
+
+                                        </table>
+                                    </td>
+                                    <td style="text-align:center">
+                                        <table style="margin:auto;width:50%;font-size:x-small">
+                                            <tr><td>R</td><td>A</td><td>C</td><td>I</td></tr>
+                                            <tr>
+                                                <td><input type="radio" name="SITRole_TC2QC_R" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_TC2QC_A" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_TC2QC_C" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_TC2QC_I" value="QACoE"></td>
+                                            </tr>
+
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+
+                                <tr>
+                                    <td>Execute TCs and Record Results in QC</td>
+                                    <td style="text-align:center">
+                                        <table style="margin:auto;width:50%;font-size:x-small">
+                                            <tr><td>R</td><td>A</td><td>C</td><td>I</td></tr>
+                                            <tr>
+                                                <td><input type="radio" name="SITRole_EXCTC_R" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_EXCTC_A" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_EXCTC_C" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_EXCTC_I" value="Project"></td>
+                                            </tr>
+
+                                        </table>
+                                    </td>
+                                    <td style="text-align:center">
+                                        <table style="margin:auto;width:50%;font-size:x-small">
+                                            <tr><td>R</td><td>A</td><td>C</td><td>I</td></tr>
+                                            <tr>
+                                                <td><input type="radio" name="SITRole_EXCTC_R" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_EXCTC_A" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_EXCTC_C" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_EXCTC_I" value="QACoE"></td>
+                                            </tr>
+
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+
+                                <tr>
+                                    <td>Create / Manage Defects in QC</td>
+                                    <td style="text-align:center">
+                                        <table style="margin:auto;width:50%;font-size:x-small">
+                                            <tr><td>R</td><td>A</td><td>C</td><td>I</td></tr>
+                                            <tr>
+                                                <td><input type="radio" name="SITRole_MNGQC_R" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_MNGQC_A" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_MNGQC_C" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_MNGQC_I" value="Project"></td>
+                                            </tr>
+
+                                        </table>
+                                    </td>
+                                    <td style="text-align:center">
+                                        <table style="margin:auto;width:50%;font-size:x-small">
+                                            <tr><td>R</td><td>A</td><td>C</td><td>I</td></tr>
+                                            <tr>
+                                                <td><input type="radio" name="SITRole_MNGQC_R" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_MNGQC_A" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_MNGQC_C" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_MNGQC_I" value="QACoE"></td>
+                                            </tr>
+
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+
+                                <tr>
+                                    <td>Create Daily Test Execution Report</td>
+                                    <td style="text-align:center">
+                                        <table style="margin:auto;width:50%;font-size:x-small">
+                                            <tr><td>R</td><td>A</td><td>C</td><td>I</td></tr>
+                                            <tr>
+                                                <td><input type="radio" name="SITRole_CDTER_R" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_CDTER_A" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_CDTER_C" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_CDTER_I" value="Project"></td>
+                                            </tr>
+
+                                        </table>
+                                    </td>
+                                    <td style="text-align:center">
+                                        <table style="margin:auto;width:50%;font-size:x-small">
+                                            <tr><td>R</td><td>A</td><td>C</td><td>I</td></tr>
+                                            <tr>
+                                                <td><input type="radio" name="SITRole_CDTER_R" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_CDTER_A" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_CDTER_C" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_CDTER_I" value="QACoE"></td>
+                                            </tr>
+
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+
+                                <tr>
+                                    <td>Run Daily Test Call</td>
+                                    <td style="text-align:center">
+                                        <table style="margin:auto;width:50%;font-size:x-small">
+                                            <tr><td>R</td><td>A</td><td>C</td><td>I</td></tr>
+                                            <tr>
+                                                <td><input type="radio" name="SITRole_RDTC_R" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_RDTC_A" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_RDTC_C" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_RDTC_I" value="Project"></td>
+                                            </tr>
+
+                                        </table>
+                                    </td>
+                                    <td style="text-align:center">
+                                        <table style="margin:auto;width:50%;font-size:x-small">
+                                            <tr><td>R</td><td>A</td><td>C</td><td>I</td></tr>
+                                            <tr>
+                                                <td><input type="radio" name="SITRole_RDTC_R" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_RDTC_A" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_RDTC_C" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_RDTC_I" value="QACoE"></td>
+                                            </tr>
+
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+
+                                <tr>
+                                    <td>Weekly Test Reporting</td>
+                                    <td style="text-align:center">
+                                        <table style="margin:auto;width:50%;font-size:x-small">
+                                            <tr><td>R</td><td>A</td><td>C</td><td>I</td></tr>
+                                            <tr>
+                                                <td><input type="radio" name="SITRole_WTR_R" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_WTR_A" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_WTR_C" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_WTR_I" value="Project"></td>
+                                            </tr>
+
+                                        </table>
+                                    </td>
+                                    <td style="text-align:center">
+                                        <table style="margin:auto;width:50%;font-size:x-small">
+                                            <tr><td>R</td><td>A</td><td>C</td><td>I</td></tr>
+                                            <tr>
+                                                <td><input type="radio" name="SITRole_WTR_R" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_WTR_A" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_WTR_C" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_WTR_I" value="QACoE"></td>
+                                            </tr>
+
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+
+                                <tr>
+                                    <td>Manage and Coordinate x-team / E2E testing</td>
+                                    <td style="text-align:center">
+                                        <table style="margin:auto;width:50%;font-size:x-small">
+                                            <tr><td>R</td><td>A</td><td>C</td><td>I</td></tr>
+                                            <tr>
+                                                <td><input type="radio" name="SITRole_MXE2E_R" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_MXE2E_A" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_MXE2E_C" value="Project"></td>
+                                                <td><input type="radio" name="SITRole_MXE2E_I" value="Project"></td>
+                                            </tr>
+
+                                        </table>
+                                    </td>
+                                    <td style="text-align:center">
+                                        <table style="margin:auto;width:50%;font-size:x-small">
+                                            <tr><td>R</td><td>A</td><td>C</td><td>I</td></tr>
+                                            <tr>
+                                                <td><input type="radio" name="SITRole_MXE2E_R" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_MXE2E_A" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_MXE2E_C" value="QACoE"></td>
+                                                <td><input type="radio" name="SITRole_MXE2E_I" value="QACoE"></td>
+                                            </tr>
+
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+
+                            </table>
+
+
+
+                        </div>
+                    </div>
+                </div>
+            </div> <!--- kt end --->

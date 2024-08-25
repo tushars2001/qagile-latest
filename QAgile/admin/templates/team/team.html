@@ -1,0 +1,450 @@
+{% extends 'base.html' %}
+{% block content %}
+    <style>
+        .editable_cell{
+            min-width:50px;
+            min-height:30px;
+        }
+    </style>
+    <script language="JavaScript">
+        function reset_user(username){
+
+            $.ajax({
+                url: "/manage/user/reset/",
+                type: "post",
+                data: {'vnid': username},
+                headers: {'X-CSRFToken': '{{csrf_token}}'},
+                success: function(response) {
+                    $( "#user_" + response.vnid ).toggle( "slow", function() {
+                        $( "#user_" + response.vnid ).toggle("slow");
+                    });
+                },
+                error: function(response) {
+                }
+            });
+
+        }
+        function create_user(username){
+
+            $.ajax({
+                url: "/manage/user/create/",
+                type: "post",
+                data: {'vnid': username},
+                headers: {'X-CSRFToken': '{{csrf_token}}'},
+                success: function(response) {
+                    $( "#user_" + response.vnid ).toggle( "slow", function() {
+                        $( "#user_" + response.vnid ).toggle("slow");
+                    });
+                },
+                error: function(response) {
+                }
+            });
+        }
+
+        function edit_cell(ob){
+            console.log(ob);
+            let vnid = ob.parentElement.getAttribute("vnid");
+            let field = ob.parentElement.getAttribute("field");
+            let editing = ob.parentElement.getAttribute("editing");
+            if(editing == "true") return;
+            ob.parentElement.setAttribute("editing", true);
+
+            if (field == 'first_name' || field == 'last_name' || field == 'email' || field == 'phone'){
+                ih = "<input onblur='save_field("+ '"' + field + '"' +", "+ '"' + vnid + '"' +", this,"+ '"' + ob.innerHTML + '"' +");' type='text' name='"+field+"' value='" + ob.innerHTML + "'>";
+                ob.innerHTML = ih;
+                ob.firstChild.focus();
+            }
+            if (field == 'domain_id' || field == 'role_id' || field == 'org' || field == 'category' || field == 'location_id' || field == 'rate_id'){
+                let multiple = '';
+                if (field == 'domain_id') multiple = "multiple";
+                ih = $("#"+field+"_select").children()[0].innerHTML;
+                let prev_val = $("#"+vnid + "_" + field+"_hidden").val();
+                ob.innerHTML = "<select onblur='save_field("+ '"' + field + '"' +", "+ '"' + vnid + '"' +", this,"+ '"' + prev_val + '"' +");' class='' " + multiple + " data-live-search='true' name='"+field+"'>" + ih + "</select>";
+                prev_val.split(",").forEach(function(rec){
+                    //$(ob.firstChild).find('option:contains(' + rec + '):first').prop('selected', true);
+                    $(ob.firstChild).val(rec);
+                });
+                ob.firstChild.focus();
+            }
+
+        }
+
+        function save_field(field, vnid, ob, prev_val){
+            $('td[vnid="'+vnid+'"][field="'+field+'"]')[0].setAttribute("editing","false");
+            let prev_to_set;
+            if(ob.type == 'select-one'){
+                prev_to_set = $(ob).find('option[value="' + prev_val + '"]').text();
+                if(field == 'rate_id') prev_to_set = prev_to_set.split(':')[1];
+            }
+            else{
+                prev_to_set = prev_val;
+            }
+            if(ob.value == prev_val) {
+                $('td[vnid="'+vnid+'"][field="'+field+'"]')[0].innerHTML = '<div class="editable_cell" onclick="edit_cell(this);">' + prev_to_set + '</div>';
+                return;
+            }
+            $.ajax({
+                url: "/profile/update-field/",
+                type: "post",
+                data: {'vnid': vnid, 'field': field, 'value': ob.value},
+                headers: {'X-CSRFToken': '{{csrf_token}}'},
+                success: function(response) {
+                    let new_to_set;
+                    if(ob.type == 'select-one'){
+                        new_to_set = $(ob).find('option[value="' + ob.value + '"]').text();
+                        if(field == 'rate_id') new_to_set = new_to_set.split(':')[1];
+
+
+                    }
+                    else{
+                        new_to_set = ob.value;
+                    }
+                    $("#"+vnid + "_" + field+"_hidden").val(ob.value);
+                    $('td[vnid="'+vnid+'"][field="'+field+'"]')[0].innerHTML = '<div class="editable_cell" onclick="edit_cell(this);">' + new_to_set+ '</div>';
+                    global_alert("Successfully Saved!", 3000, 'green', 'white');
+                },
+                error: function(response) {
+                    global_alert("Unable to save!");
+                    $('td[vnid="'+vnid+'"][field="'+field+'"]')[0].innerHTML = '<div class="editable_cell" onclick="edit_cell(this);">' + prev_to_set + '</div>';
+                }
+            });
+
+
+        }
+    </script>
+    <script>
+        $(document).ready(function(){
+            $('.selectpicker').on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
+              save_field('','',this,'');
+            });
+
+        });
+    </script>
+    <div class="headernav" id="myHeader">
+        <div class="row text-center">
+            <span class="col-md-2"> <a href="#team"> Team </a></span>
+            <span class="col-md-2"> <a href="#domains"> Domains </a></span>
+            <span class="col-md-2"> <a href="#roles"> Roles </a></span>
+            <span class="col-md-2"> <a href="#locations"> Locations </a></span>
+            <span class="col-md-2"> <a href="#rates"> Rates </a></span>
+            <span class="col-md-2">  </span>
+        </div>
+    </div>
+    <br>
+    <h5><span>Manage Team Data</span> <a href="/manage/org-chart/">Org Chart</a></h5>
+    <div class="contentnav overflow-auto">
+        <table cellspacing="5" cellpadding="5"><tr><td><h3 id="team">Team</h3></td><td><h2><a href="./person/">+</a></h2></td></tr></table>
+        <table id="teamtable" class="display">
+            <thead>
+            <tr>
+                <th>DEL</th>
+                <th>USER</th>
+                <th>VNID</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Category</th>
+                <th>Rate</th>
+                <th>Role</th>
+                <th>Location</th>
+                <th>Domain</th>
+                <th>Org</th>
+                <th>Phone</th>
+                <th>Email</th>
+
+
+            </tr>
+            </thead>
+            <tbody>
+                {% for row in teamdata %}
+                    <tr>
+                        <td>
+                            <button class="greenbuttons" type="button" onclick="del_form(this);">Delete</button>
+                            <form name="personform" method="post" action="/manage/team/person/" style="display:none;">
+                                {% csrf_token %}
+                                <input type="hidden" name="vnid" value="{{row.vnid}}">
+                                <input type="date" name="enddate" class="enddate" value="">
+                                <span>Set End Date</span>
+                                <button class="greenbuttons" type="submit" name="del_button">Delete</button>
+                            </form>
+                        </td>
+
+                        <td>
+                            {% if row.username %}
+                                <span style="cursor:pointer" onclick="reset_user('{{row.vnid}}')"> Reset </span>
+                            {% else %}
+                                <span style="cursor:pointer" onclick="create_user('{{row.vnid}}')"> Create </span>
+                            {% endif %}
+                            <div id="user_{{row.vnid}}" style="display:none;">Done!</div>
+                        </td>
+                        <td><a href="./person/?vnid={{row.vnid}}"  >{{row.vnid}}</a> </td>
+                        <td editing=false vnid="{{row.vnid}}" field="first_name">{{row.first_name}}</td>
+                        <td editing=false vnid="{{row.vnid}}" field="last_name">{{row.last_name}}</td>
+                        <td editing=false vnid="{{row.vnid}}" field="category">{{row.category}}</td>
+                        <td editing=false vnid="{{row.vnid}}" field="rate_id">{{row.rate}}</td>
+                        <td editing=false vnid="{{row.vnid}}" field="role_id">{{row.role}}</td>
+                        <td editing=false vnid="{{row.vnid}}" field="location_id">{{row.city}}</td>
+
+                        <td editing=false vnid="{{row.vnid}}" field="domain_id">
+                            {%if row.domain_name %}{{row.domain_name}}{% endif %}
+                        </td>
+                        <td editing=false vnid="{{row.vnid}}" field="org">{{row.org}}</td>
+                        <td nowrap editing=false vnid="{{row.vnid}}" field="phone">{{row.phone}}</td>
+                        <td editing=false vnid="{{row.vnid}}" field="email">{{row.email}}</td>
+                    </tr>
+                {% endfor   %}
+            </tbody>
+        </table>
+
+        <table cellspacing="5" cellpadding="5"><tr><td><h3 id="domains">Domains</h3></td><td><h2><a href="./domains/">+</a></h2></td></tr></table>
+        <table id="domaintable" class="display">
+            <thead>
+            <tr>
+                <th>Domain ID</th>
+                <th>Domain Name</th>
+                <th>Domain Lead</th>
+                <th>Domain Lead (Secondary)</th>
+                <!-- <th>Portfolio Manager</th> -->
+            </tr>
+            </thead>
+            <tbody>
+                {% for row in domains %}
+                    <tr>
+                        <td><a href="./domains/?domain_id={{row.domain_id}}">{{row.domain_id}}</a></td>
+                        <td>{%if row.domain_name %}{{row.domain_name}}{% endif %}</td>
+                        <td>{{row.dl_name}}</td>
+                        <td>{{row.dl_name_2}}</td>
+                        <!-- <td>{{row.pom_name}}</td> -->
+                    </tr>
+                {% endfor   %}
+            </tbody>
+        </table>
+
+        <table cellspacing="5" cellpadding="5"><tr><td><h3 id="roles">Roles</h3></td><td><h2><a href="./role/">+</a></h2></td></tr></table>
+        <table id="roletable" class="display">
+            <thead>
+            <tr>
+                <th>Role ID</th>
+                <th>Role</th>
+
+            </tr>
+            </thead>
+            <tbody>
+                {% for row in roles %}
+                    <tr>
+                        <td><a href="./role/?role_id={{row.role_id}}">{{row.role_id}}</a></td>
+                        <td>{%if row.role %}{{row.role}}{% endif %}</td>
+
+                    </tr>
+                {% endfor   %}
+            </tbody>
+        </table>
+
+        <table cellspacing="5" cellpadding="5"><tr><td><h3 id="locations">Locations</h3></td><td><h2><a href="./location/">+</a></h2></td></tr></table>
+        <table id="locationtable" class="display">
+            <thead>
+            <tr>
+                <th>Location ID</th>
+                <th>City</th>
+                <th>State</th>
+                <th>Country</th>
+
+            </tr>
+            </thead>
+            <tbody>
+                {% for row in locations %}
+                    <tr>
+                        <td><a href="./location/?location_id={{row.location_id}}">{{row.location_id}}</a></td>
+                        <td>{%if row.city %}{{row.city}}{% endif %}</td>
+                        <td>{{row.state}}</td>
+                        <td>{{row.country}}</td>
+
+                    </tr>
+                {% endfor   %}
+            </tbody>
+        </table>
+
+        <table cellspacing="5" cellpadding="5"><tr><td><h3 id="rates">Rates</h3></td><td><h2><a href="./rate/">+</a></h2></td></tr></table>
+        <table id="ratestable" class="display">
+            <thead>
+            <tr>
+                <th>Rate ID</th>
+                <th>Rate</th>
+                <th>Category</th>
+            </tr>
+            </thead>
+            <tbody>
+                {% for row in rates %}
+                    <tr>
+                        <td><a href="./rate/?rate_id={{row.rate_id}}">{{row.rate_id}}</a></td>
+                        <td>{%if row.rate %}${{row.rate}}{% endif %}</td>
+                        <td>{{row.category}}</td>
+                    </tr>
+                {% endfor   %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="sticky2" onclick='$(".DTED_Lightbox_Wrapper").hide();$(".sticky2").hide();'>
+        X
+    </div>
+    <div style="display:none" id="domain_id_select">
+        <select>
+            {% for row_d in domains %}
+                <option value="{{row_d.domain_id}}">{{row_d.domain_name}}</option>
+            {% endfor   %}
+        </select>
+    </div>
+
+    <div style="display:none" id="role_id_select">
+        <select>
+            <option value="">Un-assign</option>
+            {% for row_d in roles %}
+                <option value="{{row_d.role_id}}">{{row_d.role}}</option>
+            {% endfor   %}
+        </select>
+    </div>
+
+    <div style="display:none" id="location_id_select">
+        <select>
+            <option value="">Un-assign</option>
+            {% for row_d in locations %}
+                <option value="{{row_d.location_id}}">{{row_d.city}}</option>
+            {% endfor   %}
+        </select>
+    </div>
+
+    <div style="display:none" id="org_select">
+        <select>
+            <option value="">Un-assign</option>
+            <option value="IBM" >IBM</option>
+            <option value="IBMC" >IBMC</option>
+            <option value="RBS" >RBS</option>
+        </select>
+    </div>
+
+    <div style="display:none" id="category_select">
+        <select>
+            <option value="">Un-assign</option>
+            <option value="Core" >Core</option>
+            <option value="Flex" >Flex</option>
+        </select>
+    </div>
+
+    <div style="display:none" id="rate_id_select">
+        <select>
+            <option value="">Un-assign</option>
+            {% for row_d in rates %}
+                <option value="{{row_d.rate_id}}">{{row_d.category}} : {{row_d.rate}}</option>
+            {% endfor   %}
+        </select>
+    </div>
+    <div style="display:none">
+        {% for row in teamdata %}
+            <input type="hidden" id="{{row.vnid}}_category_hidden" value="{{row.category}}">
+            <input type="hidden" id="{{row.vnid}}_rate_id_hidden" value="{{row.rate_id}}">
+            <input type="hidden" id="{{row.vnid}}_role_id_hidden" value="{{row.role_id}}">
+            <input type="hidden" id="{{row.vnid}}_location_id_hidden" value="{{row.location_id}}">
+            <input type="hidden" id="{{row.vnid}}_org_hidden" value="{{row.org}}">
+        {% endfor %}
+    </div>
+
+    <!--- Datatable script--->
+    <script>
+        $(document).ready(function() {
+
+
+
+            $('#teamtable').DataTable({
+                paging: false,
+                scrollY: 400,
+                fixedHeader: false,
+                "sScrollX": "100%",
+                "bScrollCollapse": true,
+                order: [[2, 'asc']],
+
+                columns: [
+                    { data: 'DEL' },
+                    { data: 'USER' },
+                    { data: 'VNID' },
+                    { data: 'first_name' },
+                    { data: 'last_name' },
+                    { data: 'category' },
+                    { data: 'rate' },
+                    { data: 'role' },
+                    { data: 'location' },
+                    { data: 'domain_name' },
+                    { data: 'org'},
+                    { data: 'phone' },
+                    { data: 'email' }
+
+                ],
+                columnDefs: [
+                  {
+                    targets: [3,4,5,6,7,8,9,10,11,12], // The column index to which the rendering should be applied
+                    render: function (data, type, full, meta) {
+                      return '<div class="editable_cell" onclick="edit_cell(this);">' + data + '</div>';
+                    }
+                  }
+                ]
+            });
+            $(".enddate").val(new Date().toISOString().split('T')[0]);
+
+        } );
+
+        $(document).ready(function() {
+            $('#domaintable').DataTable({
+                paging: false,
+                scrollY: 300,
+                fixedHeader: false,
+                order: [[0, 'asc']]
+            });
+
+        } );
+
+        $(document).ready(function() {
+            $('#roletable').DataTable({
+                paging: false,
+                scrollY: 300,
+                fixedHeader: false,
+                order: [[0, 'asc']]
+            });
+
+        } );
+
+        $(document).ready(function() {
+            $('#locationtable').DataTable({
+                paging: false,
+                scrollY: 300,
+                fixedHeader: false,
+                order: [[0, 'asc']]
+            });
+
+        } );
+
+        $(document).ready(function() {
+            $('#ratestable').DataTable({
+                paging: false,
+                scrollY: 300,
+                fixedHeader: false,
+                order: [[0, 'asc']],
+                columns: [
+                    { data: 'rate_id' },
+                    { data: 'rate' },
+                    { data: 'category' }
+                ]
+            });
+
+        } );
+    </script>
+
+
+    <!-- MDB --->
+    <script type="text/javascript">
+        function del_form(o){
+            console.log(o);
+            o.nextElementSibling.style.display = 'block';
+            o.style.display = 'none';
+        }
+
+    </script>
+{% endblock %}

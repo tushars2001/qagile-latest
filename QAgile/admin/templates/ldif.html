@@ -1,0 +1,35 @@
+*******************************************
+<br>dn: dc=example,dc=com
+<br>objectClass: domain
+<br>objectClass: top
+<br>dc: example
+<br>
+<br>dn: ou=Users,dc=example,dc=com
+<br>objectClass: organizationalUnit
+<br>objectClass: top
+<br>ou: Users
+<br>
+<br>dn: ou=Groups,dc=example,dc=com
+<br>objectClass: organizationalUnit
+<br>objectClass: top
+<br>ou: Groups
+<br>{% for person in data %}
+<br>dn: cn={{person.first_name}} {{person.last_name}},ou=Users,dc=example,dc=com
+<br>objectClass: inetOrgPerson
+<br>objectClass: organizationalPerson
+<br>objectClass: person
+<br>objectClass: top
+<br>cn: {{person.first_name}} {{person.last_name}}
+<br>sn: {{person.last_name}}
+<br>ou: site_author
+<br>description: 19650324000000Z
+<br>employeeNumber: {{forloop.counter}}
+<br>givenName: {{person.first_name}}
+<br>mail: {{person.vnid}}@delhaize.com
+<br>telephoneNumber: 000-000-0000
+<br>uid: {{person.vnid}}
+<br>userPassword: {{person.vnid}}
+<br>telephoneNumber: 000-000-0000
+<br>
+{% endfor %}
+****************************************

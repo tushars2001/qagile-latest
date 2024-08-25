@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+{% if request.GET.error %}
+    <p>{{request.GET.error}}</p>
+{% endif %}
+<form name="loginform" method="post" action="check/">
+    {% csrf_token %}
+    <table class="rbstable">
+        <tr>
+            <td style="text-align:right">Enter Ahold/Delhaize ID</td>
+            <td><input name="user" type="text"></td>
+        </tr>
+        <tr>
+            <td style="text-align:right">Enter Password</td>
+            <td><input name="password" type="password"></td>
+        </tr>
+        <tr>
+            <td colspan="2" style="text-align:center">
+                {% if request.GET.next %}
+                    <input type="hidden" value="{{request.GET.next}}" name="next">
+                {% endif %}
+                <button type="submit" value="Login">Login</button>
+            </td>
+        </tr>
+    </table>
+</form>
+{% endblock %}

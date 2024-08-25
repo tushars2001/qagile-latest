@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block content %}
+
+    <div class="headernav" id="myHeader">
+        <div class="row text-center">
+            <span class="col-md-2"> <a href="#team"> Team </a></span>
+            <span class="col-md-2"> <a href="#domains"> Domains </a></span>
+            <span class="col-md-2"> <a href="#roles"> Roles </a></span>
+            <span class="col-md-2"> <a href="#locations"> Locations </a></span>
+            <span class="col-md-2"> <a href="#rates"> Rates </a></span>
+            <span class="col-md-2">  </span>
+        </div>
+    </div>
+
+    <div class="contentnav overflow-auto">
+        <table cellspacing="5" cellpadding="5"><tr><td><h3 id="location">Role</h3></td><td><a href="../#locations">Back</a></td></tr></table>
+        <form name="locationform" method="post" action="./">
+            {% csrf_token %}
+        <table id="locationtable" class="display rbstable">
+            <tbody>
+                {% for row in locationdata %}
+                    <tr>
+                        <td>location ID</td><td><input type="text" name="location_id" value="{{row.location_id}}" readonly maxlength="7" style="background-color:grey"></td>
+                    </tr>
+                    <tr>
+                        <td>City</td><td><input type="text" name="city" value="{{row.city}}" maxlength="45"></td>
+                    </tr>
+                    <tr>
+                        <td>State</td><td><input type="text" name="state" value="{{row.state}}" maxlength="45"></td>
+                    </tr>
+                    <tr>
+                        <td>Zip</td><td><input type="text" name="zip" value="{{row.zip}}" maxlength="45"></td>
+                    </tr>
+                    <tr>
+                        <td>Country</td><td><input type="text" name="country" value="{{row.country}}" maxlength="45"></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <button class="greenbuttons" type="submit" name="save_button">Save</button>
+                            {% if row.vnid != "" %}
+                                <button class="greenbuttons" type="submit" name="del_button">Delete</button>
+                            {% endif %}
+                        </td>
+
+                    </tr>
+                 {% endfor   %}
+            </tbody>
+        </table>
+        </form>
+
+{% endblock %}

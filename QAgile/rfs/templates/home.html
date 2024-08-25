@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div>
+    <div> <a href="./request-for-service">+ Create New Request for Service </a> </div>
+    <form method="get" action="./">
+        {% csrf_token %}
+        <table class="rbstable">
+            <tr>
+                <td>
+                    Domains
+                    <select id="domainselect" name="domain_ids" class="selectpicker"  multiple data-actions-box="true">
+                        {% for row_d in domains_info %}
+                            <option value="{{row_d.domain_id}}">{{row_d.domain_name}}</option>
+                        {% endfor   %}
+                    </select>
+                </td>
+                <td>
+                    Portfolio Managers
+                        <select id="personselect" name="vnids" class="selectpicker" multiple data-actions-box="true">
+
+                        {% for row_d in poms %}
+                            <option value="{{row_d.vnid}}" >{{row_d.first_name}} {{row_d.last_name}}</option>
+                        {% endfor   %}
+                    </select>
+                </td>
+                <td>
+                    Status
+                        <select id="statusselect" name="statuses" class="selectpicker" multiple data-actions-box="true">
+                            <option value="NEW">NEW</option>
+                            <option value="SUBMITTED">SUBMITTED</option>
+                            <option value="APPROVED">APPROVED</option>
+                            <option value="REJECTED">REJECTED</option>
+                            <option value="REOPENED">REOPENED</option>
+
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="3">
+                    <button type="submit" class="greenbuttons">Filter</button>
+                </td>
+            </tr>
+        </table>
+    </form>
+    <table id="rfstable" class="display">
+        <thead>
+        <tr>
+            <th nowrap>RFS ID</th>
+            <th nowrap>X</th>
+            <th nowrap>Project Id</th>
+            <th nowrap>Project Name</th>
+            <th nowrap>Status</th>
+            <th nowrap>last_updated</th>
+            <th nowrap>Requester</th>
+            <th nowrap>Portfolio Manager</th>
+            <th nowrap>QA CoE Lead</th>
+        </tr>
+        </thead>
+        <tbody>
+            {% for row in rfsdata %}
+                <tr>
+                    <td nowrap>
+                        <form name="rfsform_{{row.project_id}}" method="post" action="./request-for-service/">
+                            {% csrf_token %}
+                            <input type="hidden" name="rfs_request_id" value="{{row.link}}">
+                            <input type="hidden" name="via_view" value="via_view">
+                            <button class="greenbuttons" type="submit">
+                                RFS-{{row.rfs_request_id}}
+                            </button>
+                        </form>
+                    </td>
+                    <td nowrap>
+                        <form name="del_rfsform_{{row.project_id}}" method="post" action="./">
+                            {% csrf_token %}
+                            <input type="hidden" name="rfs_request_id" value="{{row.link}}">
+                            <input type="hidden" name="delete" value="delete">
+                            <button class="greenbuttons" type="submit" onclick="return confirm('Are you sure you want to delete {{row.project_id}}');">X</button>
+                        </form>
+                    </td>
+                    <td>{{row.project_id}}</td>
+                    <td>{{row.project_name}}</td>
+                    <td>{{row.rfs_status}}</td>
+                    <td>{{row.last_updated|date:"Y-m-d"}}</td>
+                    <td>{{row.requester_name}} ({{row.requester_role}})</td>
+                    <td>{{row.pom_name}}</td>
+                    <td>{{row.qa_coe_lead_name}}</td>
+                </tr>
+            {% endfor   %}
+        </tbody>
+    </table>
+
+</div>
+
+<script>
+
+    $(document).ready(function() {
+            $('#rfstable').DataTable({
+                paging: true,
+                scrollY: 300,
+                scrollX: true,
+                scroller: true,
+                order: [[0, 'desc']]
+
+            });
+
+            {% if filters.domains %}
+                $('#domainselect').selectpicker('val',{{filters.domains|safe|escape}});
+            {% endif %}
+
+            {% if filters.vnids %}
+                $('#personselect').selectpicker('val',{{filters.vnids|safe|escape}});
+            {% endif %}
+
+            {% if filters.statuses %}
+                $('#statusselect').selectpicker('val',{{filters.statuses|safe|escape}});
+            {% endif %}
+
+        } );
+
+</script>
+
+{% endblock %}

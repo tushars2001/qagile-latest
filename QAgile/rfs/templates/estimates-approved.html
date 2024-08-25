@@ -1,0 +1,138 @@
+{% extends 'headmenu.html' %}
+{% block rfs_content %}
+    <script>
+    function formatDate(date) {
+        var d = new Date(date),
+            month = '' + (d.getMonth() + 1),
+            day = '' + d.getDate(),
+            year = d.getFullYear();
+
+        if (month.length < 2)
+            month = '0' + month;
+        if (day.length < 2)
+            day = '0' + day;
+
+        return [year, month, day].join('-');
+    }
+
+    function update_totals(what){
+
+        KTAPP_hrs = isNaN(parseInt($("#KTAPP_hrs").prop("innerHTML"))) ? 0 :  parseInt($("#KTAPP_hrs").prop("innerHTML"));
+        KTSSR_hrs = isNaN(parseInt($("#KTSSR_hrs").prop("innerHTML"))) ? 0 :  parseInt($("#KTSSR_hrs").prop("innerHTML"));
+        total_kt = KTAPP_hrs + KTSSR_hrs;
+        $("#total_kt_cost").prop("innerHTML",total_kt);
+
+        SIT_hrs = isNaN(parseInt($("#SIT_hrs").prop("innerHTML"))) ? 0 :  parseInt($("#SIT_hrs").prop("innerHTML"));
+        UAT_hrs = isNaN(parseInt($("#UAT_hrs").prop("innerHTML"))) ? 0 :  parseInt($("#UAT_hrs").prop("innerHTML"));
+        PERF_hrs = isNaN(parseInt($("#PERF_hrs").prop("innerHTML"))) ? 0 :  parseInt($("#PERF_hrs").prop("innerHTML"));
+        SEC_hrs = isNaN(parseInt($("#SEC_hrs").prop("innerHTML"))) ? 0 :  parseInt($("#SEC_hrs").prop("innerHTML"));
+        ACC_hrs = isNaN(parseInt($("#ACC_hrs").prop("innerHTML"))) ? 0 :  parseInt($("#ACC_hrs").prop("innerHTML"));
+        PRDAT_hrs = isNaN(parseInt($("#PRDAT_hrs").prop("innerHTML"))) ? 0 :  parseInt($("#PRDAT_hrs").prop("innerHTML"));
+        POM_hrs = isNaN(parseInt($("#POM_hrs").prop("innerHTML"))) ? 0 :  parseInt($("#POM_hrs").prop("innerHTML"));
+        total_ts = SIT_hrs + UAT_hrs + PERF_hrs + SEC_hrs + ACC_hrs + PRDAT_hrs + POM_hrs + total_kt;
+        $("#total_ts_cost").prop("innerHTML",total_ts);
+
+        TRVCO_hrs = isNaN(parseInt($("#TRVCO_hrs").prop("innerHTML"))) ? 0 :  parseInt($("#TRVCO_hrs").prop("innerHTML"));
+        res_load_cost = {{rfs_total_rl.total_qa_cost}};
+        total_qa = TRVCO_hrs + res_load_cost;
+        $("#total_qa_cost").prop("innerHTML",total_qa);
+
+        res_load_hrs = {{rfs_total_rl.rfs_total_hrs}};
+        diff = res_load_hrs - total_ts;
+        if (diff == 0){
+            $("#hrs_match").prop("innerHTML","Matched");
+            $("#hrs_match").css("background-color","green");
+            $("#hrs_match").css("color","white");
+        }
+        if (diff > 0){
+            $("#hrs_match").prop("innerHTML","Under by "+Math.abs(diff)+" hrs");
+            $("#hrs_match").css("background-color","red");
+            $("#hrs_match").css("color","white");
+        }
+        if (diff < 0){
+            $("#hrs_match").prop("innerHTML","Over by "+Math.abs(diff)+" hrs");
+            $("#hrs_match").css("background-color","red");
+            $("#hrs_match").css("color","white");
+        }
+
+
+    }
+    </script>
+
+    <script>
+        $(document).ready(function() {
+
+            $('#estimatetable').DataTable({
+                paging: false,
+                scrollY: 400,
+                fixedHeader: false,
+                "sScrollX": "100%",
+                "bScrollCollapse": true,
+                order: [1, 'asc']
+            });
+
+            $('.select').selectpicker();
+
+
+            /* ******************************************* PRE POPULATE *********************************************
+               ******************************************* PRE POPULATE *********************************************
+               ******************************************* PRE POPULATE *********************************************
+            */
+
+            {% for row in rfs_estimates %}
+                $("#{{row.activity_code}}_hrs").prop("innerHTML",("{{row.effort | stringformat:'d'}}"));
+                $("#{{row.activity_comments}}_hrs").prop("innerHTML",("{{row.comment|default_if_none:''}}"));
+            {% endfor %}
+
+            {% for row in rfs_estimates_raci %}
+                var p_or_q = '';
+                var name = '';
+
+                {% if row.p_or_q == 'P' %} p_or_q = 'Project'; {% endif %}
+                {% if row.p_or_q == 'Q' %} p_or_q = 'QACoE'; {% endif %}
+
+                name = '{{row.raci_scope}}Role_{{row.raci_code}}_{{row.RACI}}';
+
+                $("input[name='"+name+"'][value='"+p_or_q+"']").prop("checked","true");
+
+            {% endfor %}
+            $("input[type=radio]").prop("disabled","disabled")
+            update_totals();
+
+            /* ******************************************* PRE POPULATE *********************************************
+               ******************************************* PRE POPULATE *********************************************
+               ******************************************* PRE POPULATE *********************************************
+            */
+
+            $('.selectpicker').on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
+
+            });
+        } );
+
+    </script>
+
+
+    <div class="contentnav overflow-auto" style="min-height:400px">
+        <form name="initRFS" id="initRFS" method="post" action="./estimates">
+            {% csrf_token %}
+            <input type="hidden" name="rfs_request_id" value="{{rfs_request_data.link}}">
+            <input type="hidden" value="" name="rfs_status" id="rfs_status">
+
+            {% include 'estimates-approved-sections/kt.html' %}
+
+            {% include 'estimates-approved-sections/testing-service.html' %}
+
+            {% include 'estimates-approved-sections/total-qa.html' %}
+
+            {% include 'estimates-approved-sections/travel.html' %}
+
+            {% include 'estimates-approved-sections/qa-sit-role.html' %}
+
+            {% include 'estimates-approved-sections/qa-uat-role.html' %}
+
+            <br><br>
+
+        </form>
+    </div>
+{% endblock %}
+

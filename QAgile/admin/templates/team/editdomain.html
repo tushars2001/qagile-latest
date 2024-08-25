@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block content %}
+
+    <div class="headernav" id="myHeader">
+        <div class="row text-center">
+            <span class="col-md-2"> <a href="#team"> Team </a></span>
+            <span class="col-md-2"> <a href="#domains"> Domains </a></span>
+            <span class="col-md-2"> <a href="#roles"> Roles </a></span>
+            <span class="col-md-2"> <a href="#locations"> Locations </a></span>
+            <span class="col-md-2"> <a href="#rates"> Rates </a></span>
+            <span class="col-md-2">  </span>
+        </div>
+    </div>
+
+    <div class="contentnav overflow-auto">
+        <table cellspacing="5" cellpadding="5"><tr><td><h3 id="domain">Domains</h3></td><td><a href="../#domains">Back</a></td></tr></table>
+        <form name="domainform" method="post" action="./">
+            {% csrf_token %}
+        <table id="domaintable" class="display rbstable">
+            <tbody>
+                {% for row in domaindata %}
+                    <tr>
+                        <td>Domain ID</td><td><input type="text" name="domain_id" value="{{row.domain_id}}" readonly maxlength="7" style="background-color:grey"></td>
+                    </tr>
+                    <tr>
+                        <td>Domain Name</td><td><input type="text" name="domain_name" value="{{row.domain_name}}" maxlength="45"></td>
+                    </tr>
+                    <tr>
+                        <td>Domain Lead Name</td><td>
+                        <select name="dl_name">
+                            <option value="">Un-assign</option>
+                            {% for row_p in dldata %}
+                                <option value="{{row_p.vnid}}" {% if row_p.vnid == row.domain_lead %} selected {% endif %}>{{row_p.first_name}} {{row_p.last_name}} - {{row_p.vnid}}</option>
+                            {% endfor   %}
+                        </select>
+                    </td>
+                    </tr>
+                    <tr>
+                        <td>Domain Lead Secondary</td><td>
+                        <select name="dl_name_2">
+                            <option value="">Un-assign</option>
+                            {% for row_p in dldata %}
+                                <option value="{{row_p.vnid}}" {% if row_p.vnid == row.domain_lead_two %} selected {% endif %}>{{row_p.first_name}} {{row_p.last_name}} - {{row_p.vnid}}</option>
+                            {% endfor   %}
+                        </select>
+                    </td>
+                    </tr>
+                   <!-- <tr>
+                        <td>Portfolio Manager</td><td>
+                        <select name="pom">
+                            <option value="">Un-assign</option>
+                            {% for row_p in pomdata %}
+                                <option value="{{row_p.vnid}}" {% if row_p.vnid == row.pom %} selected {% endif %}>{{row_p.first_name}} {{row_p.last_name}} - {{row_p.vnid}}</option>
+                            {% endfor   %}
+                        </select>
+                        </td>
+                    </tr> -->
+                    <tr>
+                        <td colspan="2">
+                            <button class="greenbuttons" type="submit" name="save_button">Save</button>
+                            {% if row.vnid != "" %}
+                                <button class="greenbuttons" type="submit" name="del_button">Delete</button>
+                            {% endif %}
+                        </td>
+
+                    </tr>
+                 {% endfor   %}
+            </tbody>
+        </table>
+        </form>
+
+
+
+    <!--- Datatable script--->
+
+
+
+    <!-- MDB --->
+    <script type="text/javascript">
+
+
+    </script>
+{% endblock %}

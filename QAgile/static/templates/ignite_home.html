@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block content %}
+{% if request.GET.error %}
+    <p>{{request.GET.error}}</p>
+{% endif %}
+<h3>Ignite Tracker Automation</h3>
+{% if include_html %}
+    {% include include_html %}
+{% endif %}
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block content %}
+    {% if request.GET.error %}
+        <p>{{request.GET.error}}</p>
+    {% endif %}
+
+<script language="JavaScript">
+    $(function(){
+        $('.selectpicker').selectpicker('val', '{{person.0.domain_id}}');
+    });
+
+    function check_form(){
+        domain_id = document.getElementsByName('domain_id')[0].value;
+        ppmid = document.getElementsByName('ppmid')[0].value;
+        project_name = document.getElementsByName('project_name')[0].value;
+        source = document.getElementsByName('source')[0].value;
+        source_id = document.getElementsByName('source_id')[0].value;
+        return false;
+    }
+</script>
+<div class="contentnav overflow-auto">
+    <h1>Create New Project</h1>
+    <form method="post" action="./">
+        {% csrf_token %}
+        <table class="rbstable" style="width:80%">
+            <tr>
+                <td style="width:300PX">Domain</td>
+                <td>
+                    <select name="domain_id" class="selectpicker" multiple data-live-search="true">
+                        {% for row_d in domains %}
+                            <option value="{{row_d.domain_id}}">{{row_d.domain_name}}</option>
+                        {% endfor   %}
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td style="width:300PX">PPMID</td>
+                <td>
+                    <input type="text" name="ppmid" onkeypress="check_ppmid()">
+                    <div style="display:none; color:red" id="child_div" >New Child Project will be created for <span id="parent_ppmid"></span></div>
+                    <input type="hidden" name="parent_ppmid" value="">
+                </td>
+            </tr>
+            <tr>
+                <td style="width:300PX" >Project Name</td>
+                <td>
+                    <input type="text" name="project_name">
+                </td>
+            </tr>
+            <tr>
+                <td style="width:300PX">Test Management</td>
+                <td>
+                    <input type="radio" id="source_jira" name="source" value="Jira">
+                    <label for="source_jira">Jira</label><br>
+                    <input type="radio" id="source_alm" name="source" value="ALM">
+                    <label for="source_alm">ALM</label><br>
+                    <input type="radio" id="source_other" name="source" value="Other">
+                    <label for="source_other">Other</label>
+                </td>
+            </tr>
+            <tr>
+                <td style="width:300PX">Test Management Project ID</td>
+                <td>
+                    <input type="text" name="source_id">
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <button type="submit" onclick="return check_form()" class="greenbuttons">Create</button>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+
+{% endblock %}
